@@ -1,0 +1,46 @@
+name: Daily Sanctions Sync
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run all crawlers
+        run: python -m crawlers.run_all
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Log results
+        run: |
+          python -c "
+          import os, requests
+          url = os.environ['SUPABASE_URL']
+          key = os.environ['SUPABASE_SERVICE_KEY']
+          headers = {'apikey': key, 'Authorization': f'Bearer {key}'}
+          resp = requests.get(f'{url}/rest/v1/source_status?order=source', headers=headers)
+          if resp.status_code == 200:
+              total = 0
+              for r in resp.json():
+                  count = r.get('entity_count', 0) or 0
+                  print(f'{r[\"source\"]:20s} {count:>8,} entities  (synced {r.get(\"last_sync\", \"?\")})')
+                  total += count
+              print(f'{\"TOTAL\":20s} {total:>8,} entities')
+          "
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
