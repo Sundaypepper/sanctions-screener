@@ -122,29 +122,4 @@ class InterpolCrawler(BaseCrawler):
             'source_url': f"https://www.interpol.int/en/How-we-work/Notices/Red-Notices/View-Red-Notices#{entity_id}",
         }
     
-    def run(self):
-        """Override to handle paginated fetch+parse."""
-        import time as _time
-        start = _time.time()
-        
-        try:
-            entities = self.parse(b"")
-            
-            from db.models import get_db, upsert_entity, update_source_status
-            conn = get_db()
-            for entity in entities:
-                entity['source'] = self.SOURCE_NAME
-                upsert_entity(conn, entity)
-            
-            duration = _time.time() - start
-            update_source_status(conn, self.SOURCE_NAME, len(entities), duration)
-            conn.commit()
-            conn.close()
-            
-            logger.info(f"[{self.SOURCE_NAME}] Synced {len(entities)} entities in {duration:.1f}s")
-            return len(entities)
-            
-        except Exception as e:
-            duration = _time.time() - start
-            logger.error(f"[{self.SOURCE_NAME}] Error: {e}")
-            raise
+    # Uses BaseCrawler.run() — fetch() returns b"", parse() handles pagination
