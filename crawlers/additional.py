@@ -11,9 +11,9 @@ import xml.etree.ElementTree as ET
 from crawlers.base import BaseCrawler, logger
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # UK OFSI - Office of Financial Sanctions
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class UKOFSICrawler(BaseCrawler):
     SOURCE_NAME = "uk_ofsi"
     # OFSI Consolidated List retired 28 Jan 2026; replaced by UK Sanctions List
@@ -99,46 +99,9 @@ class UKOFSICrawler(BaseCrawler):
         return entities
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # World Bank Debarment List
-# ─────────────────────────────────────────────
-class WorldBankCrawler(BaseCrawler):
-    SOURCE_NAME = "worldbank"
-    # World Bank API requires subscription key; using OpenSanctions mirror instead
-    SOURCE_URL = "https://data.opensanctions.org/datasets/latest/worldbank_debarred/entities.ftm.json"
-
-    def fetch(self) -> bytes:
-        resp = self.session.get(self.SOURCE_URL, timeout=120)
-        resp.raise_for_status()
-        return resp.content
-
-    def parse(self, raw_data: bytes) -> list[dict]:
-        entities = []
-        lines = raw_data.decode('utf-8').strip().split('\n')
-
-        for line in lines:
-            try:
-                record = json.loads(line)
-            except:
-                continue
-
-            schema = record.get('schema', '')
-            if schema not in ('LegalEntity', 'Person', 'Company', 'Organization'):
-                continue
-
-            props = record.get('properties', {})
-            name = (props.get('name', [''])[0] if props.get('name') else '')
-            if not name:
-                continue
-
-            country = props.get('country', [''])[0] if props.get('country') else ''
-            address = props.get('address', [''])[0] if props.get('address') else ''
-
-            entity_type = 'person' if schema == 'Person' else 'company'
-
-            en�───────────────────────
-# World Bank Debarment List
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class WorldBankCrawler(BaseCrawler):
     SOURCE_NAME = "worldbank"
     # World Bank API requires subscription key; using OpenSanctions mirror instead
@@ -194,9 +157,9 @@ class WorldBankCrawler(BaseCrawler):
         return entities
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # Canada - Consolidated Autonomous Sanctions
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class CanadaCrawler(BaseCrawler):
     SOURCE_NAME = "canada_sema"
     SOURCE_URL = "https://www.international.gc.ca/world-monde/assets/office_docs/international_relations-relations_internationales/sanctions/sema-lmes.xml"
@@ -266,9 +229,9 @@ class CanadaCrawler(BaseCrawler):
         }
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # Australia DFAT Consolidated Sanctions
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class AustraliaCrawler(BaseCrawler):
     SOURCE_NAME = "australia_dfat"
     # XLS file (the CSV version is no longer reliably available)
@@ -317,7 +280,32 @@ class AustraliaCrawler(BaseCrawler):
                 entities.append({
                     'source_id': row.get('Reference', '') or row.get('reference', '') or name[:80],
                     'entity_type': entity_type,
-                    'full_name': n
+                    'full_name': name,
+                    'first_name': '',
+                    'last_name': name,
+                    'aliases': [],
+                    'identifiers': [],
+                    'nationalities': [row.get('Citizenship', '')] if row.get('Citizenship') else [],
+                    'addresses': [row.get('Address', '')] if row.get('Address') else [],
+                    'birth_dates': [row.get('Date of Birth', '')] if row.get('Date of Birth') else [],
+                    'birth_places': [row.get('Place of Birth', '')] if row.get('Place of Birth') else [],
+                    'programs': [row.get('Committees', '') or 'Australia Sanctions'],
+                    'reasons': row.get('Additional Information', '') or '',
+                    'legal_basis': 'Australian Autonomous Sanctions Act 2011',
+                    'source_url': 'https://www.dfat.gov.au/international-relations/security/sanctions/consolidated-list',
+                })
+
+        except ImportError:
+            logger.warning("[australia] xlrd not installed. Trying CSV fallback...")
+            # Fallback: try CSV URL
+            try:
+                csv_url = "https://www.dfat.gov.au/sites/default/files/regulation8_consolidated.csv"
+                resp = self.session.get(csv_url, timeout=120)
+                resp.raise_for_status()
+                return self._parse_csv(resp.content)
+            except Exception as e:
+                logger.error(f"[australia] CSV fallback also failed: {e}")
+        except Exception as e:
             logger.error(f"[australia] XLS parse error: {e}")
 
         return entities
@@ -357,9 +345,9 @@ class AustraliaCrawler(BaseCrawler):
         return entities
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # Switzerland SECO
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class SECOCrawler(BaseCrawler):
     SOURCE_NAME = "swiss_seco"
     SOURCE_URL = "https://www.sesam.search.admin.ch/sesam-search-web/pages/downloadXmlGesamtliste.xhtml?lang=en&action=downloadXmlGesamtlisteAction"
@@ -515,9 +503,9 @@ class SECOCrawler(BaseCrawler):
         }
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # US BIS Denied Persons List
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class BISDeniedCrawler(BaseCrawler):
     SOURCE_NAME = "us_bis_denied"
     SOURCE_URL = "https://www.bis.gov/licensing/end-user-guidance/denied-persons-list-dpl"
@@ -636,9 +624,9 @@ class BISDeniedCrawler(BaseCrawler):
         return entities
 
 
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 # US SAM.gov Exclusions
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
 class SAMExclusionsCrawler(BaseCrawler):
     SOURCE_NAME = "us_sam"
     SOURCE_URL = "https://api.sam.gov/entity-information/v3/exclusions"
