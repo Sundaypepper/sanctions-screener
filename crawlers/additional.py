@@ -15,16 +15,10 @@ from crawlers.base import BaseCrawler, logger
 # ─────────────────────────────────────────────
 class UKOFSICrawler(BaseCrawler):
     SOURCE_NAME = "uk_ofsi"
-    SOURCE_URL = "https://assets.publishing.service.gov.uk/media/65d89d2c6efa83001de2d3f1/UK_Sanctions_List.ods"
-    # Alternative CSV endpoint:
-    CSV_URL = "https://ofsistorage.blob.core.windows.net/publishlive/2022format/ConList.csv"
-    
+    # OFSI Consolidated List retired 28 Jan 2026; replaced by UK Sanctions List
+    SOURCE_URL = "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv"
+
     def fetch(self) -> bytes:
-        # Try CSV format first (easier to parse)
-        resp = self.session.get(self.CSV_URL, timeout=120)
-        if resp.status_code == 200:
-            return resp.content
-        # Fallback
         resp = self.session.get(self.SOURCE_URL, timeout=120)
         resp.raise_for_status()
         return resp.content
@@ -99,8 +93,7 @@ class UKOFSICrawler(BaseCrawler):
 # ─────────────────────────────────────────────
 class WorldBankCrawler(BaseCrawler):
     SOURCE_NAME = "worldbank"
-    SOURCE_URL = "https://api.worldbank.org/v2/debarr?format=json&per_page=5000"
-    # Alternative: scrape HTML from worldbank.org/debarred-firms
+    SOURCE_URL = "https://apigwext.worldbank.org/dvsvc/v1.0/json/APPLICATION/ADOBE_EXPRNCE_MGR/FIRM/SANCTIONED_FIRM"
     
     def fetch(self) -> bytes:
         resp = self.session.get(self.SOURCE_URL, timeout=120)
@@ -167,7 +160,7 @@ class WorldBankCrawler(BaseCrawler):
 # ─────────────────────────────────────────────
 class CanadaCrawler(BaseCrawler):
     SOURCE_NAME = "canada_sema"
-    SOURCE_URL = "https://www.international.gc.ca/world-monde/assets/office-bureau/international_sanctions-sanctions_internationales.xml"
+    SOURCE_URL = "https://www.international.gc.ca/world-monde/assets/office_docs/international_relations-relations_internationales/sanctions/sema-lmes.xml"
     
     def fetch(self) -> bytes:
         resp = self.session.get(self.SOURCE_URL, timeout=120)
@@ -507,23 +500,4 @@ class SAMExclusionsCrawler(BaseCrawler):
             'source_url': 'https://sam.gov/content/exclusions',
         }
     
-    def run(self):
-        """Override for paginated source."""
-        import time as _time
-        start = _time.time()
-        
-        entities = self.parse(b"")
-        
-        from db.models import get_db, upsert_entity, update_source_status
-        conn = get_db()
-        for entity in entities:
-            entity['source'] = self.SOURCE_NAME
-            upsert_entity(conn, entity)
-        
-        duration = _time.time() - start
-        update_source_status(conn, self.SOURCE_NAME, len(entities), duration)
-        conn.commit()
-        conn.close()
-        
-        logger.info(f"[{self.SOURCE_NAME}] Synced {len(entities)} entities in {duration:.1f}s")
-        return len(entities)
+    # Uses BaseCrawler.run() — fetch() returns b"", parse() handles pagination
