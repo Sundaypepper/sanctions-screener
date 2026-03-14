@@ -1,0 +1,2 @@
+# Crawlers (det eneste som kjører – i GitHub Actions)
+requests==2.32.*
