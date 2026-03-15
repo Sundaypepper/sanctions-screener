@@ -24,6 +24,11 @@ from crawlers.additional import (
     BISDeniedCrawler,
     SAMExclusionsCrawler,
 )
+from crawlers.extended import (
+    FranceTresorCrawler,
+    OFACConsolidatedCrawler,
+    OHCHRSettlementCrawler,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +49,9 @@ ALL_CRAWLERS = [
     SECOCrawler,
     BISDeniedCrawler,
     SAMExclusionsCrawler,
+    FranceTresorCrawler,
+    OFACConsolidatedCrawler,
+    OHCHRSettlementCrawler,
 ]
 
 
