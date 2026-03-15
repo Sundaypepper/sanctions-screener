@@ -44,14 +44,19 @@ def upsert_entities_batch(entities: list[dict], batch_size: int = 500):
     """
     Upsert entities in batches to Supabase.
     Uses PostgREST upsert (INSERT ... ON CONFLICT).
+    Deduplicates by id within each batch to avoid PostgreSQL error 21000.
     """
     total = 0
+    now = datetime.utcnow().isoformat()
+
     for i in range(0, len(entities), batch_size):
         batch = entities[i:i + batch_size]
-        rows = []
+
+        # Build rows and deduplicate by id (last occurrence wins)
+        seen = {}
         for e in batch:
             entity_id = f"{e['source']}:{e.get('source_id', '')}"
-            rows.append({
+            seen[entity_id] = {
                 "id": entity_id,
                 "source": e.get("source", ""),
                 "source_id": e.get("source_id", ""),
@@ -73,8 +78,10 @@ def upsert_entities_batch(entities: list[dict], batch_size: int = 500):
                 "legal_basis": e.get("legal_basis", ""),
                 "source_url": e.get("source_url", ""),
                 "raw_data": e.get("raw_data", {}),
-                "last_updated": datetime.utcnow().isoformat(),
-            })
+                "last_updated": now,
+            }
+
+        rows = list(seen.values())
 
         resp = requests.post(
             _api("entities"),
@@ -84,7 +91,7 @@ def upsert_entities_batch(entities: list[dict], batch_size: int = 500):
         if resp.status_code not in (200, 201):
             raise Exception(f"Supabase upsert failed ({resp.status_code}): {resp.text[:200]}")
 
-        total += len(batch)
+        total += len(rows)
     return total
 
 
