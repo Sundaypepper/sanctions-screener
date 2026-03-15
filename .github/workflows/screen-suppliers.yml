@@ -1,4 +1,4 @@
-name: Weekly Supplier Screening
+name: Weekly Vendor Screening & Notifications
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # Manuell kjøring
 
 jobs:
-  screen:
+  screen-and-notify:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Screen all active supplier lists
+      - name: Deactivate expired contracts & screen vendors
         id: screen
         run: |
           python - <<'PYEOF'
@@ -36,45 +36,206 @@ jobs:
               "Content-Type": "application/json",
           }
 
-          # 1. Call screen_all_active_lists RPC
-          print("=== Screening all active supplier lists ===")
+          # ============================================================
+          # STEG 1: Deaktiver utløpte kontrakter og leverandører
+          # ============================================================
+          print("=== Steg 1: Deaktiverer utløpte kontrakter ===")
           resp = requests.post(
-              f"{SUPABASE_URL}/rest/v1/rpc/screen_all_active_lists",
+              f"{SUPABASE_URL}/rest/v1/rpc/deactivate_expired_contracts",
+              headers=headers,
+              json={},
+          )
+          if resp.status_code == 200:
+              expired = resp.json()
+              if expired:
+                  print(f"  {len(expired)} leverandør(er) uten aktive kontrakter:")
+                  for e in expired:
+                      print(f"    - {e.get('vendor_name', '?')} ({e.get('user_email', '?')})")
+
+                      # Send varsling om at leverandøren ikke lenger overvåkes
+                      if RESEND_KEY:
+                          html = f"""
+                          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto;">
+                            <div style="background: #1a1a2e; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
+                              <h1 style="margin: 0; font-size: 20px;">ℹ️ Leverandør deaktivert</h1>
+                              <p style="margin: 8px 0 0; opacity: 0.8;">Screener Pro – Automatisk varsel</p>
+                            </div>
+                            <div style="padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                              <p>Leverandøren <strong>«{e.get('vendor_name', '')}»</strong> har ingen aktive kontrakter igjen.</p>
+                              <p>Sanksjonsscreeningen for denne leverandøren og tilhørende underleverandører er <strong>stoppet</strong>.</p>
+                              <p>Hvis du ønsker å gjenoppta overvåkingen, legg til en ny kontrakt med stoppedato i portalen:</p>
+                              <a href="https://forumoa.no/screener-portal.html"
+                                 style="display: inline-block; background: #c9a227; color: #1a1a2e; padding: 12px 24px;
+                                        border-radius: 6px; text-decoration: none; font-weight: 600; margin: 16px 0;">
+                                Åpne Screener Pro →
+                              </a>
+                            </div>
+                          </div>
+                          """
+                          requests.post(
+                              "https://api.resend.com/emails",
+                              headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+                              json={
+                                  "from": "Screener Pro <screener@forumoa.no>",
+                                  "to": [e.get("user_email", "")],
+                                  "subject": f"ℹ️ Leverandør «{e.get('vendor_name', '')}» er deaktivert",
+                                  "html": html,
+                              },
+                          )
+              else:
+                  print("  Ingen utløpte kontrakter å deaktivere.")
+          else:
+              print(f"  FEIL: {resp.status_code}: {resp.text}")
+
+          # ============================================================
+          # STEG 2: Sjekk kontrakter som utløper innen 30 dager
+          # ============================================================
+          print("\n=== Steg 2: Sjekker kontrakter som snart utløper ===")
+          resp = requests.post(
+              f"{SUPABASE_URL}/rest/v1/rpc/check_expiring_contracts",
+              headers=headers,
+              json={"p_days_ahead": 30},
+          )
+          if resp.status_code == 200:
+              expiring = resp.json()
+              if expiring:
+                  print(f"  {len(expiring)} kontrakt(er) utløper innen 30 dager")
+                  for c in expiring:
+                      print(f"    - {c.get('contract_name', '?')} ({c.get('vendor_name', '?')}) utløper {c.get('end_date', '?')}")
+
+                      if RESEND_KEY:
+                          html = f"""
+                          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto;">
+                            <div style="background: #1a1a2e; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
+                              <h1 style="margin: 0; font-size: 20px;">⏰ Kontrakt utløper snart</h1>
+                              <p style="margin: 8px 0 0; opacity: 0.8;">Screener Pro – Automatisk varsel</p>
+                            </div>
+                            <div style="padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                              <p>Kontrakten <strong>«{c.get('contract_name', '')}»</strong> for leverandøren
+                                 <strong>«{c.get('vendor_name', '')}»</strong> utløper <strong>{c.get('end_date', '')}</strong>.</p>
+                              <p>Når kontrakten utløper, stoppes automatisk sanksjonsscreening for underleverandørene knyttet til denne kontrakten.</p>
+                              <p>Hvis kontrakten er forlenget, oppdater stoppedatoen i portalen:</p>
+                              <a href="https://forumoa.no/screener-portal.html"
+                                 style="display: inline-block; background: #c9a227; color: #1a1a2e; padding: 12px 24px;
+                                        border-radius: 6px; text-decoration: none; font-weight: 600; margin: 16px 0;">
+                                Oppdater kontrakt →
+                              </a>
+                            </div>
+                          </div>
+                          """
+                          requests.post(
+                              "https://api.resend.com/emails",
+                              headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+                              json={
+                                  "from": "Screener Pro <screener@forumoa.no>",
+                                  "to": [c.get("user_email", "")],
+                                  "subject": f"⏰ Kontrakt «{c.get('contract_name', '')}» utløper {c.get('end_date', '')}",
+                                  "html": html,
+                              },
+                          )
+              else:
+                  print("  Ingen kontrakter utløper snart.")
+          else:
+              print(f"  FEIL: {resp.status_code}: {resp.text}")
+
+          # ============================================================
+          # STEG 3: Sjekk abonnementer som utløper innen 30 dager
+          # ============================================================
+          print("\n=== Steg 3: Sjekker abonnementer som snart utløper ===")
+          resp = requests.post(
+              f"{SUPABASE_URL}/rest/v1/rpc/check_expiring_subscriptions",
+              headers=headers,
+              json={"p_days_ahead": 30},
+          )
+          if resp.status_code == 200:
+              exp_subs = resp.json()
+              if exp_subs:
+                  print(f"  {len(exp_subs)} abonnement(er) utløper innen 30 dager")
+                  for s in exp_subs:
+                      print(f"    - {s.get('user_email', '?')} ({s.get('plan', '?')}) utløper {s.get('expires_at', '?')}")
+
+                      if RESEND_KEY:
+                          html = f"""
+                          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto;">
+                            <div style="background: #1a1a2e; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
+                              <h1 style="margin: 0; font-size: 20px;">📋 Abonnementet utløper snart</h1>
+                              <p style="margin: 8px 0 0; opacity: 0.8;">Screener Pro – Automatisk varsel</p>
+                            </div>
+                            <div style="padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                              <p>Ditt Screener Pro-abonnement ({s.get('plan', '').title()}-planen) utløper <strong>{s.get('expires_at', '')[:10]}</strong>.</p>
+                              <p>Etter utløp stoppes all automatisk sanksjonsscreening av dine leverandører.</p>
+                              <p>For å fornye abonnementet, ta kontakt med oss:</p>
+                              <a href="mailto:kurs@forumoa.no"
+                                 style="display: inline-block; background: #c9a227; color: #1a1a2e; padding: 12px 24px;
+                                        border-radius: 6px; text-decoration: none; font-weight: 600; margin: 16px 0;">
+                                Kontakt oss for fornyelse →
+                              </a>
+                            </div>
+                          </div>
+                          """
+                          requests.post(
+                              "https://api.resend.com/emails",
+                              headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+                              json={
+                                  "from": "Screener Pro <screener@forumoa.no>",
+                                  "to": [s.get("user_email", "")],
+                                  "subject": f"📋 Ditt Screener Pro-abonnement utløper {s.get('expires_at', '')[:10]}",
+                                  "html": html,
+                              },
+                          )
+              else:
+                  print("  Ingen abonnementer utløper snart.")
+          else:
+              print(f"  FEIL: {resp.status_code}: {resp.text}")
+
+          # ============================================================
+          # STEG 4: Kjør screening av alle aktive leverandører
+          # ============================================================
+          print("\n=== Steg 4: Screener alle aktive leverandører ===")
+          resp = requests.post(
+              f"{SUPABASE_URL}/rest/v1/rpc/screen_all_active_vendors",
               headers=headers,
               json={},
           )
 
           if resp.status_code != 200:
-              print(f"ERROR: RPC returned {resp.status_code}: {resp.text}")
+              print(f"FEIL: RPC returnerte {resp.status_code}: {resp.text}")
               exit(1)
 
           results = resp.json()
-          print(f"Screened {len(results)} list(s)")
+          print(f"Screenet {len(results)} leverandør(er)")
 
-          # 2. Send email notifications for lists with new matches
-          lists_with_matches = [r for r in results if r.get("new_matches", 0) > 0]
+          # 5. Send e-postvarsling for leverandører med nye treff
+          vendors_with_matches = [r for r in results if r.get("new_matches", 0) > 0]
 
-          if not lists_with_matches:
-              print("No new matches found. No emails to send.")
+          if not vendors_with_matches:
+              print("Ingen nye treff funnet. Ingen e-poster å sende.")
               exit(0)
 
-          print(f"{len(lists_with_matches)} list(s) have new matches")
+          print(f"{len(vendors_with_matches)} leverandør(er) har nye treff")
 
           if not RESEND_KEY:
-              print("WARNING: RESEND_KEY not set — skipping email notifications")
-              for r in lists_with_matches:
-                  print(f"  - {r['list_name']}: {r['new_matches']} new match(es) → {r['user_email']}")
+              print("ADVARSEL: RESEND_KEY ikke satt — hopper over e-postvarsling")
+              for r in vendors_with_matches:
+                  print(f"  - {r.get('vendor_name', '?')}: {r['new_matches']} nye treff → {r.get('user_email', '?')}")
               exit(0)
 
-          # 3. Get detailed match info for each user
-          for r in lists_with_matches:
-              email_to = r["user_email"]
-              list_name = r["list_name"]
-              match_count = r["new_matches"]
+          # Group matches by user_email for one email per user
+          from collections import defaultdict
+          by_user = defaultdict(list)
+          for r in vendors_with_matches:
+              by_user[r["user_email"]].append(r)
 
-              print(f"Sending alert to {email_to}: {match_count} match(es) in '{list_name}'")
+          for email_to, user_vendors in by_user.items():
+              total_matches = sum(v["new_matches"] for v in user_vendors)
+              vendor_lines = "".join(
+                  f'<tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">{v.get("vendor_name", "?")}</td>'
+                  f'<td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: center; font-weight: 600; color: #c0392b;">{v["new_matches"]}</td></tr>'
+                  for v in user_vendors
+              )
 
-              # Build email HTML
+              print(f"Sender varsel til {email_to}: {total_matches} treff i {len(user_vendors)} leverandør(er)")
+
               html = f"""
               <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto;">
                 <div style="background: #1a1a2e; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
@@ -82,10 +243,17 @@ jobs:
                   <p style="margin: 8px 0 0; opacity: 0.8;">Screener Pro – Ukentlig rapport</p>
                 </div>
                 <div style="padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-                  <p>Det er funnet <strong>{match_count} nye treff</strong> i leverandørlisten <strong>«{list_name}»</strong>.</p>
+                  <p>Det er funnet <strong>{total_matches} nye treff</strong> ved denne ukens screening:</p>
+                  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                    <tr style="background: #f3f4f6;">
+                      <th style="padding: 8px; text-align: left;">Leverandør</th>
+                      <th style="padding: 8px; text-align: center;">Nye treff</th>
+                    </tr>
+                    {vendor_lines}
+                  </table>
                   <p>Logg inn i Screener Pro-portalen for å gjennomgå treffene og verifisere mot kilden:</p>
                   <a href="https://forumoa.no/screener-portal.html"
-                     style="display: inline-block; background: #f59e0b; color: #1a1a2e; padding: 12px 24px;
+                     style="display: inline-block; background: #c9a227; color: #1a1a2e; padding: 12px 24px;
                             border-radius: 6px; text-decoration: none; font-weight: 600; margin: 16px 0;">
                     Åpne Screener Pro →
                   </a>
@@ -96,47 +264,42 @@ jobs:
                   </p>
                   <p style="font-size: 14px; color: #6b7280;">
                     Trenger du juridisk bistand med sanksjonsregelverket?
-                    <a href="mailto:kurs@forumoa.no" style="color: #f59e0b;">Kontakt oss</a>
+                    <a href="mailto:kurs@forumoa.no" style="color: #c9a227;">Kontakt advokat Robert Myhre</a>
                   </p>
                 </div>
               </div>
               """
 
-              # Send via Resend
               email_resp = requests.post(
                   "https://api.resend.com/emails",
-                  headers={
-                      "Authorization": f"Bearer {RESEND_KEY}",
-                      "Content-Type": "application/json",
-                  },
+                  headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
                   json={
                       "from": "Screener Pro <screener@forumoa.no>",
                       "to": [email_to],
-                      "subject": f"⚠️ {match_count} nye sanksjons­treff i «{list_name}»",
+                      "subject": f"⚠️ {total_matches} nye sanksjons­treff denne uken",
                       "html": html,
                   },
               )
 
               if email_resp.status_code in (200, 201):
                   resend_id = email_resp.json().get("id", "")
-                  print(f"  ✓ Email sent (Resend ID: {resend_id})")
+                  print(f"  ✓ E-post sendt (Resend ID: {resend_id})")
 
-                  # Log the email in Supabase
+                  # Logg e-posten i Supabase
                   requests.post(
                       f"{SUPABASE_URL}/rest/v1/email_log",
                       headers={**headers, "Prefer": "return=minimal"},
                       json={
-                          "user_id": None,  # We don't have user_id here easily
                           "email_to": email_to,
-                          "subject": f"{match_count} nye sanksjons­treff i «{list_name}»",
-                          "matches_count": match_count,
+                          "subject": f"{total_matches} nye sanksjons­treff denne uken",
+                          "matches_count": total_matches,
                           "resend_id": resend_id,
                       },
                   )
               else:
-                  print(f"  ✗ Email failed: {email_resp.status_code} {email_resp.text}")
+                  print(f"  ✗ E-post feilet: {email_resp.status_code} {email_resp.text}")
 
-          print("=== Done ===")
+          print("\n=== Ferdig ===")
           PYEOF
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
