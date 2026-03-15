@@ -28,6 +28,7 @@ from crawlers.extended import (
     FranceTresorCrawler,
     OFACConsolidatedCrawler,
     OHCHRSettlementCrawler,
+    CBPWROCrawler,
 )
 
 logging.basicConfig(
@@ -52,6 +53,7 @@ ALL_CRAWLERS = [
     FranceTresorCrawler,
     OFACConsolidatedCrawler,
     OHCHRSettlementCrawler,
+    CBPWROCrawler,
 ]
 
 

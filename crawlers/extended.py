@@ -1,6 +1,7 @@
 """
 Extended crawlers for: France Trésor (Gel des avoirs),
-OFAC Consolidated Non-SDN List, OHCHR Settlement Database.
+OFAC Consolidated Non-SDN List, OHCHR Settlement Database,
+US CBP Withhold Release Orders (forced labor).
 """
 
 import json
@@ -481,6 +482,126 @@ class OHCHRSettlementCrawler(BaseCrawler):
                 "reasons": "Business enterprise involved in activities related to Israeli settlements in the Occupied Palestinian Territory",
                 "legal_basis": "UN Human Rights Council Resolution 31/36",
                 "source_url": "https://www.ohchr.org/en/hr-bodies/hrc/regular-sessions/session31/database-hrc3136",
+            })
+
+        return entities
+
+
+# ─────────────────────────────────────────────
+# US CBP - Withhold Release Orders (WRO)
+# ─────────────────────────────────────────────
+class CBPWROCrawler(BaseCrawler):
+    """
+    US Customs and Border Protection - Withhold Release Orders & Findings.
+    Forced labor enforcement actions. ~59 active entities.
+    CBP blocks direct CSV download (403), so data is hardcoded from the
+    official CSV at cbp.gov. Updated when CBP publishes new WROs.
+    """
+    SOURCE_NAME = "us_cbp_wro"
+    SOURCE_URL = "https://www.cbp.gov/document/stats/withhold-release-orders-findings"
+
+    # (entity, country, industry, effective_date, type)
+    # From: withhold-release-orders-findings-fy26-dec.csv (active entries only)
+    ENTITIES = [
+        ("State Penitentiary, Ciudad Victoria, Tamaulipas, Mexico", "Mexico", "Consumer Products and Mass Merchandising", "12/28/1953", "Finding"),
+        ("State Penitentiary, Ciudad Victoria, Tamaulipas, Mexico", "Mexico", "Consumer Products and Mass Merchandising", "10/29/1958", "Finding"),
+        ("Xiang-Yang Machinery Plant", "China", "Machinery", "11/6/1991", "WRO"),
+        ("Yunnan Machinery, a/k/a Golden Horse (JinMa) Diesel Factory, a/k/a Yunnan 1st Prison", "China", "Automotive and Aerospace", "11/14/1991", "WRO"),
+        ("Xuzhou Forging and Pressing Machine Works", "China", "Machinery", "12/2/1991", "WRO"),
+        ("Shandong Laiyang Heavy Duty Machinery Factory", "China", "Base Metals", "2/25/1992", "WRO"),
+        ("Yunnan Machinery, a/k/a Golden Horse (JinMa) Diesel Factory, a/k/a Yunnan 1st Prison", "China", "Automotive and Aerospace", "3/18/1992", "Finding"),
+        ("Qinghai Hide & Garment Factory, a/k/a Qinghai Leather and Wool Bedding and Garment Factory, a/k/a Qinghai Fur and Cloth Factory", "China", "Agriculture and Prepared Products", "5/22/1992", "WRO"),
+        ("Manzhouli Wood Products Factory, a/k/a Manzhouli Linye Company", "China", "Agriculture and Prepared Products", "9/9/1992", "WRO"),
+        ("Shanghai Laodong Machinery Factory, a/k/a Laogang Laodong Service, a/k/a Shanghai Laogang Laogai Farm (Shanghai No.4 Prison)", "China", "Machinery", "5/14/1993", "WRO"),
+        ("Shenyang Xinsheng (New Life) Rubber Factory, a/k/a Shenyang Xingsheng (or Xinsheng) (New Life) Rubber Plant, a/k/a Shenyang No. 2 Laogai Detachment, a/k/a Shenyang Dabei Prison, a/k/a Shenyang Model Prison", "China", "Industrial and Manufacturing Materials", "9/1/1993", "WRO"),
+        ("Shenyang Xinsheng (New Life) Chemical Works, a/k/a Shenyang Dongbei Assistant Agent Main Factory, a/k/a Xinsheng Chemical Factory, a/k/a Shenyang No. 1 Laogai Detachment, a/k/a Shenyang Reform Through Labor Second Reform Division", "China", "Pharmaceuticals, Health and Chemicals", "9/3/1993", "WRO"),
+        ("Fuchu Prison; Union Kogyo Co., Ltd.", "Japan", "Consumer Products and Mass Merchandising", "6/12/1994", "WRO"),
+        ("Guangzhou No. 1 Reeducation-Through-Labor Camp, a/k/a Guangdong Province No. 1 Reeducation-Through-Labor Camp; Kwong Ngai Industrial Company", "China", "Industrial and Manufacturing Materials", "6/28/1994", "WRO"),
+        ("Mudanjiang (Peony River) Reeducation-Through-Labor Camp, a/k/a Mudanjiang Laodong Jiaoyang Zhidui, a/k/a Mudanjiang City Dongfeng Pipe Fittings Factory", "China", "Base Metals", "7/15/1994", "WRO"),
+        ("Qiqihar (Tsitsihar) Labor Reform 204 Farm, a/k/a Shuanghe Nongchang, a/k/a Qiqihar Shuanghe Laogai Farm, a/k/a Shuanghe Farm", "China", "Agriculture and Prepared Products", "7/29/1994", "WRO"),
+        ("Qiqihar (Tsitsihar) Reform Through Labor 204 Farm, a/k/a Shuanghe Nongchang, a/k/a Qiqihar Shuanghe Laogai Farm, a/k/a Shuanghe Farm", "China", "Agriculture and Prepared Products", "11/30/1994", "Finding"),
+        ("China Cattle Breeding Enterprise, a/k/a Zhongguo Yangniu Zonghe Qiye; Xinjiang Kashgar Prefecture Yecheng County Cattle Farm, a/k/a Xinjiang Kashgar Prefecture Shache County Cattle Farm", "China", "Agriculture and Prepared Products", "2/13/1995", "WRO"),
+        ("Chengdu Shuangliu No. 2 Laogai Detachment Factory, a/k/a Chengdu Model Prison Factory, a/k/a Chengdu Shuangliu Enterprise, a/k/a Chengdu Shuangliu Sujiao Chang (Plastics Factory), a/k/a Chengdu Model Prison", "China", "Industrial and Manufacturing Materials", "3/27/1995", "WRO"),
+        ("Tianjin No. 2 Printing Plant, a/k/a Tianjin Yinshuachang, a/k/a Tianjin Shuguang, a/k/a Tianjin Shuguang Binhe Electrical Appliance Factory, a/k/a Tianjin No. 2 Prison (Manufacturing)", "China", "Industrial and Manufacturing Materials", "4/3/1995", "WRO"),
+        ("Shanghai Huadong Electric Welding Machine Factory, a/k/a Shanghai Qingpu Laogai Farm", "China", "Machinery", "4/18/1995", "WRO"),
+        ("Changsha Jiulong Zinc Oxide Factory, a/k/a Xinkapu Prison (Changsha No. 4 Prison)", "China", "Pharmaceuticals, Health and Chemicals", "7/11/1995", "WRO"),
+        ("Tianjin Pipe Fitting Factory, a/k/a Tianjin Tongbao (or Tongbao) Fittings Factory, a/k/a Tianjin No. 2 Malleable Iron Factory, a/k/a Tianjin Iron Casting Factory, a/k/a Tianjin Secondary Mugging Factory, a/k/a Tianjin No. 2 Prison", "China", "Base Metals", "10/6/1995", "WRO"),
+        ("Tianjin Malleable Iron Factory, a/k/a Tianjin Tongbao Fittings Company, a/k/a Tianjin No. 2 Malleable Iron Plant, a/k/a Tianjin Secondary Mugging Factory, a/k/a Tianjin No. 2 Prison", "China", "Base Metals", "4/23/1996", "Finding"),
+        ("Mangalore Ganesh Beedi Works", "India", "Agriculture and Prepared Products", "11/23/1999", "WRO"),
+        ("Inner Mongolia Hengzheng Group Baoanzhao Agriculture, Industry, and Trade Co., Ltd.", "China", "Pharmaceuticals, Health and Chemicals", "5/20/2016", "WRO"),
+        ("Hongchang Fruits & Vegetable Products Co., Ltd.", "China", "Agriculture and Prepared Products", "9/16/2016", "WRO"),
+        ("Huizhou Mink Industrial CO. Ltd.", "China", "All", "3/5/2018", "WRO"),
+        ("All Turkmenistan Cotton or products produced in whole or in part with Turkmenistan cotton.", "Turkmenistan", "Agriculture and Prepared Products", "5/18/2018", "WRO"),
+        ("Hetian Taida Apparel Co., Ltd.", "China", "Apparel, Footwear and Textiles", "9/30/2019", "WRO"),
+        ("Marange Diamond Fields", "Zimbabwe", "Industrial and Manufacturing Materials", "9/30/2019", "WRO"),
+        ("Hetian Haolin Hair Accessories Co., Ltd.", "China", "Pharmaceuticals, Health and Chemicals", "5/1/2020", "WRO"),
+        ("Lop County Meixin Hair Products Co., Ltd.", "China", "Pharmaceuticals, Health and Chemicals", "6/17/2020", "WRO"),
+        ("Paakumsuk Industrial Co.", "North Korea", "Industrial and Manufacturing Materials", "7/13/2020", "WRO"),
+        ("Natchi Apparel", "India", "Apparel, Footwear and Textiles", "7/30/2020", "WRO"),
+        ("All products harvested by fishing vessels Da Wang, Hua Li 8, Liao Dong Yu, Lu Qing Yuan Yu, Lu Rong Yuan Yu, Zhe Pu Yu, or Dalian Ocean Fishing", "China", "Agriculture and Prepared Products", "8/18/2020", "WRO"),
+        ("Fishing Vessel: Da Wang 1", "China", "Agriculture and Prepared Products", "8/18/2020", "WRO"),
+        ("Fishing Vessel: Da Wang 2", "China", "Agriculture and Prepared Products", "8/18/2020", "WRO"),
+        ("No. 4 Vocational Skills Education Training Center (VSETC)", "China", "All", "8/25/2020", "WRO"),
+        ("Lop County Hair Product Industrial Park", "China", "Pharmaceuticals, Health and Chemicals", "8/25/2020", "WRO"),
+        ("Yili Zhuowan Garment Manufacturing Co., Ltd. and Baoding LYSZD Trade and Business Co., Ltd.", "China", "Apparel, Footwear and Textiles", "9/3/2020", "WRO"),
+        ("Hefei Bitland Information Technology Co., Ltd.", "China", "Electronics", "9/8/2020", "WRO"),
+        ("Top Glove Corporation Bhd", "Malaysia", "Pharmaceuticals, Health and Chemicals", "7/15/2021", "WRO"),
+        ("Hoshine Silicon Industry Co., Ltd.", "China", "Industrial and Manufacturing Materials", "6/24/2021", "WRO"),
+        ("Supermax Corporation Berhad", "Malaysia", "Pharmaceuticals, Health and Chemicals", "10/21/2021", "WRO"),
+        ("Xinjiang Junggar Cotton and Linen Co., Ltd.", "China", "Apparel, Footwear and Textiles", "11/2/2021", "WRO"),
+        ("All gold mined, produced, or manufactured with convict labor, forced labor, or indentured labor under penal sanctions in the Artisanal mining sites in the eastern Democratic Republic of the Congo (DRC)", "Democratic Republic of the Congo", "Industrial and Manufacturing Materials", "11/16/2022", "WRO"),
+        ("Tobacco produced in the Republic of Malawi by Malawian workers, including child laborers and/or forced laborers", "Malawi", "Agriculture and Prepared Products", "11/9/2023", "WRO"),
+        ("British American Tobacco Malawi (BAT Malawi)", "Malawi", "Agriculture and Prepared Products", "11/9/2023", "WRO"),
+        ("Fishing Vessel: Zhen Fa 7", "China", "Agriculture and Prepared Products", "5/28/2025", "WRO"),
+        ("Giant Manufacturing Co., Ltd.", "Taiwan", "Consumer Products and Mass Merchandising", "9/24/2025", "WRO"),
+        ("Firemount Group Ltd.", "Mauritius", "Apparel, Footwear and Textiles", "11/18/2025", "WRO"),
+        ("Linglong International Europe D.O.O. Zrenjanin", "Serbia", "Automotive and Aerospace", "12/18/2025", "WRO"),
+        ("Finca Monte Grande", "Mexico", "Agriculture and Prepared Products", "1/29/2026", "WRO"),
+    ]
+
+    def fetch(self) -> bytes:
+        # Data is hardcoded from CBP CSV - direct download blocked (403)
+        return b""
+
+    def parse(self, raw_data: bytes) -> list[dict]:
+        entities = []
+        seen = set()
+
+        for name, country, industry, date, wro_type in self.ENTITIES:
+            # Deduplicate by name (some entities appear twice with WRO + Finding)
+            key = name.strip().lower()
+            if key in seen:
+                continue
+            seen.add(key)
+
+            # Extract primary name (before a/k/a)
+            primary_name = name.split(", a/k/a")[0].split("; ")[0].strip()
+
+            # Extract aliases from a/k/a
+            aliases = []
+            if "a/k/a" in name:
+                parts = name.split("a/k/a")
+                for part in parts[1:]:
+                    alias = part.strip().rstrip(",").strip()
+                    if alias:
+                        aliases.append(alias)
+
+            entities.append({
+                "source_id": f"wro-{primary_name[:70]}",
+                "entity_type": "company",
+                "full_name": primary_name,
+                "first_name": "",
+                "last_name": primary_name,
+                "aliases": aliases,
+                "identifiers": [],
+                "nationalities": [country] if country else [],
+                "addresses": [country] if country else [],
+                "birth_dates": [],
+                "birth_places": [],
+                "programs": [f"CBP {wro_type} - Forced Labor"],
+                "reasons": f"Withhold Release Order / Finding — goods produced with forced labor. Industry: {industry}",
+                "legal_basis": "19 U.S.C. § 1307 (Tariff Act of 1930)",
+                "source_url": "https://www.cbp.gov/trade/forced-labor",
             })
 
         return entities
