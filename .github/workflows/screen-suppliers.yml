@@ -1,0 +1,144 @@
+name: Weekly Supplier Screening
+
+on:
+  schedule:
+    # Kjør hver mandag kl 06:00 UTC (etter at sync har kjørt kl 04:00)
+    - cron: '0 6 * * 1'
+  workflow_dispatch:  # Manuell kjøring
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Screen all active supplier lists
+        id: screen
+        run: |
+          python - <<'PYEOF'
+          import os, json, requests
+
+          SUPABASE_URL = os.environ["SUPABASE_URL"]
+          SERVICE_KEY  = os.environ["SUPABASE_SERVICE_KEY"]
+          RESEND_KEY   = os.environ.get("RESEND_KEY", "")
+
+          headers = {
+              "apikey": SERVICE_KEY,
+              "Authorization": f"Bearer {SERVICE_KEY}",
+              "Content-Type": "application/json",
+          }
+
+          # 1. Call screen_all_active_lists RPC
+          print("=== Screening all active supplier lists ===")
+          resp = requests.post(
+              f"{SUPABASE_URL}/rest/v1/rpc/screen_all_active_lists",
+              headers=headers,
+              json={},
+          )
+
+          if resp.status_code != 200:
+              print(f"ERROR: RPC returned {resp.status_code}: {resp.text}")
+              exit(1)
+
+          results = resp.json()
+          print(f"Screened {len(results)} list(s)")
+
+          # 2. Send email notifications for lists with new matches
+          lists_with_matches = [r for r in results if r.get("new_matches", 0) > 0]
+
+          if not lists_with_matches:
+              print("No new matches found. No emails to send.")
+              exit(0)
+
+          print(f"{len(lists_with_matches)} list(s) have new matches")
+
+          if not RESEND_KEY:
+              print("WARNING: RESEND_KEY not set — skipping email notifications")
+              for r in lists_with_matches:
+                  print(f"  - {r['list_name']}: {r['new_matches']} new match(es) → {r['user_email']}")
+              exit(0)
+
+          # 3. Get detailed match info for each user
+          for r in lists_with_matches:
+              email_to = r["user_email"]
+              list_name = r["list_name"]
+              match_count = r["new_matches"]
+
+              print(f"Sending alert to {email_to}: {match_count} match(es) in '{list_name}'")
+
+              # Build email HTML
+              html = f"""
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: #1a1a2e; color: white; padding: 24px; border-radius: 8px 8px 0 0;">
+                  <h1 style="margin: 0; font-size: 20px;">⚠️ Nye sanksjons­treff</h1>
+                  <p style="margin: 8px 0 0; opacity: 0.8;">Screener Pro – Ukentlig rapport</p>
+                </div>
+                <div style="padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+                  <p>Det er funnet <strong>{match_count} nye treff</strong> i leverandørlisten <strong>«{list_name}»</strong>.</p>
+                  <p>Logg inn i Screener Pro-portalen for å gjennomgå treffene og verifisere mot kilden:</p>
+                  <a href="https://forumoa.no/screener-portal.html"
+                     style="display: inline-block; background: #f59e0b; color: #1a1a2e; padding: 12px 24px;
+                            border-radius: 6px; text-decoration: none; font-weight: 600; margin: 16px 0;">
+                    Åpne Screener Pro →
+                  </a>
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+                  <p style="font-size: 14px; color: #6b7280;">
+                    ⚠️ <strong>Viktig:</strong> Verifiser alltid treff direkte hos kilden før du tar skritt.
+                    Automatisk screening kan gi falske positive.
+                  </p>
+                  <p style="font-size: 14px; color: #6b7280;">
+                    Trenger du juridisk bistand med sanksjonsregelverket?
+                    <a href="mailto:kurs@forumoa.no" style="color: #f59e0b;">Kontakt oss</a>
+                  </p>
+                </div>
+              </div>
+              """
+
+              # Send via Resend
+              email_resp = requests.post(
+                  "https://api.resend.com/emails",
+                  headers={
+                      "Authorization": f"Bearer {RESEND_KEY}",
+                      "Content-Type": "application/json",
+                  },
+                  json={
+                      "from": "Screener Pro <screener@forumoa.no>",
+                      "to": [email_to],
+                      "subject": f"⚠️ {match_count} nye sanksjons­treff i «{list_name}»",
+                      "html": html,
+                  },
+              )
+
+              if email_resp.status_code in (200, 201):
+                  resend_id = email_resp.json().get("id", "")
+                  print(f"  ✓ Email sent (Resend ID: {resend_id})")
+
+                  # Log the email in Supabase
+                  requests.post(
+                      f"{SUPABASE_URL}/rest/v1/email_log",
+                      headers={**headers, "Prefer": "return=minimal"},
+                      json={
+                          "user_id": None,  # We don't have user_id here easily
+                          "email_to": email_to,
+                          "subject": f"{match_count} nye sanksjons­treff i «{list_name}»",
+                          "matches_count": match_count,
+                          "resend_id": resend_id,
+                      },
+                  )
+              else:
+                  print(f"  ✗ Email failed: {email_resp.status_code} {email_resp.text}")
+
+          print("=== Done ===")
+          PYEOF
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
