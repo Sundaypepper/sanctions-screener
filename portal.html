@@ -1,0 +1,1015 @@
+---
+permalink: /screener-portal.html
+---
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanksjonsovervåking - Forum for offentlige anskaffelser</title>
+  <meta name="description" content="Automatisk sanksjonsscreening av leverandørlister. Last opp leverandører og få ukentlig varsling ved treff.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ink: #1a1a2e;
+      --cream: #faf8f5;
+      --gold: #c9a227;
+      --gold-light: #e8d48b;
+      --navy: #16213e;
+      --slate: #3a3a55;
+      --warm-gray: #6a6a7a;
+      --surface: #f0ece4;
+      --white: #ffffff;
+      --green: #27ae60;
+      --red: #c0392b;
+      --orange: #e67e22;
+    }
+    html { overflow-x: clip; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      color: var(--ink);
+      background-color: var(--cream);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Header */
+    .header {
+      background: var(--white);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .header-inner {
+      max-width: 1000px; margin: 0 auto; padding: 0.75rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo-area { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: var(--navy); }
+    .logo-circle {
+      width: 48px; height: 48px; border: 1.5px solid var(--navy); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 1rem; font-style: italic; flex-shrink: 0;
+    }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+    .header-actions { display: flex; gap: 1rem; align-items: center; }
+    .user-email { font-size: 0.9rem; color: var(--warm-gray); }
+    .btn-logout {
+      background: none; border: 1.5px solid var(--warm-gray); border-radius: 5px;
+      padding: 0.3rem 0.8rem; font-size: 0.9rem; color: var(--warm-gray);
+      cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* Container */
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    /* Auth page */
+    .auth-container {
+      max-width: 420px; margin: 4rem auto; padding: 2.5rem;
+      background: var(--white); border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .auth-container h1 {
+      font-family: 'Playfair Display', serif; font-size: 1.8rem;
+      color: var(--navy); margin-bottom: 0.3rem;
+    }
+    .auth-container p { color: var(--warm-gray); margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.3rem; color: var(--navy); }
+    .form-group input {
+      width: 100%; padding: 0.7rem 0.9rem; font-size: 1.05rem;
+      border: 2px solid #ddd; border-radius: 6px; outline: none;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+    .form-group input:focus { border-color: var(--gold); }
+    .btn-primary {
+      width: 100%; padding: 0.8rem; background: var(--navy); color: var(--white);
+      border: none; border-radius: 6px; font-size: 1.1rem; font-weight: 600;
+      cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+    }
+    .btn-primary:hover { background: var(--slate); }
+    .btn-primary:disabled { opacity: 0.5; cursor: wait; }
+    .auth-toggle { text-align: center; margin-top: 1rem; font-size: 0.95rem; }
+    .auth-toggle a { cursor: pointer; color: var(--gold); }
+    .auth-message {
+      padding: 0.7rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;
+    }
+    .auth-message.error { background: rgba(192,57,43,0.1); color: var(--red); }
+    .auth-message.success { background: rgba(39,174,96,0.1); color: var(--green); }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #e8e4dc; margin-bottom: 2rem; }
+    .tab {
+      padding: 0.7rem 1.5rem; font-weight: 600; font-size: 1.05rem;
+      color: var(--warm-gray); cursor: pointer; border-bottom: 3px solid transparent;
+      margin-bottom: -2px; transition: all 0.2s;
+      background: none; border-top: none; border-left: none; border-right: none;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+    .tab:hover { color: var(--navy); }
+    .tab.active { color: var(--navy); border-bottom-color: var(--gold); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--white); border-radius: 8px; border: 1px solid #e8e4dc;
+      padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.2rem;
+      color: var(--navy); margin-bottom: 0.3rem;
+    }
+    .card-meta { font-size: 0.95rem; color: var(--warm-gray); margin-bottom: 0.5rem; }
+    .card-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+
+    /* Buttons */
+    .btn {
+      padding: 0.5rem 1rem; border-radius: 5px; font-size: 0.95rem;
+      font-weight: 600; cursor: pointer; border: none;
+      font-family: 'Source Sans 3', sans-serif; transition: all 0.2s;
+    }
+    .btn-screen { background: var(--navy); color: var(--white); }
+    .btn-screen:hover { background: var(--slate); }
+    .btn-delete { background: rgba(192,57,43,0.1); color: var(--red); }
+    .btn-delete:hover { background: rgba(192,57,43,0.2); }
+    .btn-gold { background: var(--gold); color: var(--white); }
+    .btn-gold:hover { background: var(--accent); }
+    .btn-outline { background: none; border: 1.5px solid var(--gold); color: var(--gold); }
+    .btn-outline:hover { background: var(--gold); color: var(--white); }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed #ccc; border-radius: 8px; padding: 2.5rem;
+      text-align: center; cursor: pointer; transition: all 0.3s;
+      background: var(--white);
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color: var(--gold); background: rgba(201,162,39,0.05);
+    }
+    .upload-area h3 { font-family: 'Playfair Display', serif; margin-bottom: 0.5rem; color: var(--navy); }
+    .upload-area p { color: var(--warm-gray); font-size: 0.95rem; }
+    .upload-area input[type="file"] { display: none; }
+
+    /* List name input */
+    .new-list-form {
+      display: none; background: var(--white); border-radius: 8px;
+      border: 1px solid #e8e4dc; padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .new-list-form.visible { display: block; }
+    .new-list-form .form-row { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+    .new-list-form input {
+      flex: 1; padding: 0.6rem 0.8rem; font-size: 1rem;
+      border: 2px solid #ddd; border-radius: 6px; outline: none;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+    .new-list-form input:focus { border-color: var(--gold); }
+
+    /* Match cards */
+    .match-card {
+      background: var(--white); border-radius: 8px;
+      border-left: 4px solid var(--red); padding: 1.2rem 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .match-card.reviewed { border-left-color: var(--warm-gray); opacity: 0.7; }
+    .match-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .match-supplier { font-weight: 700; color: var(--navy); font-size: 1.1rem; }
+    .match-entity { color: var(--red); font-weight: 600; }
+    .match-score {
+      font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.5rem;
+      border-radius: 3px; white-space: nowrap;
+      background: rgba(192,57,43,0.1); color: var(--red);
+    }
+    .match-details { font-size: 0.95rem; color: var(--slate); margin-top: 0.5rem; line-height: 1.5; }
+    .match-actions { margin-top: 0.8rem; display: flex; gap: 0.5rem; align-items: center; }
+    .match-source-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(201,162,39,0.1); color: var(--accent);
+      padding: 0.4rem 0.8rem; border-radius: 5px; font-size: 0.9rem;
+      font-weight: 600; text-decoration: none;
+    }
+    .match-source-link:hover { background: rgba(201,162,39,0.2); text-decoration: none; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--white); border-radius: 8px; padding: 1.2rem;
+      text-align: center; border: 1px solid #e8e4dc;
+    }
+    .stat-number {
+      font-family: 'Playfair Display', serif; font-size: 2rem;
+      color: var(--navy); font-weight: 700;
+    }
+    .stat-label { font-size: 0.9rem; color: var(--warm-gray); }
+    .stat-number.alert { color: var(--red); }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 3rem; color: var(--warm-gray); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .empty-state h3 { font-family: 'Playfair Display', serif; color: var(--slate); margin-bottom: 0.3rem; }
+
+    /* Progress bar */
+    .progress-container { display: none; margin: 1rem 0; }
+    .progress-container.visible { display: block; }
+    .progress-bar {
+      height: 8px; background: #e8e4dc; border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--gold); border-radius: 4px;
+      transition: width 0.3s ease; width: 0%;
+    }
+    .progress-text { font-size: 0.9rem; color: var(--warm-gray); margin-top: 0.3rem; }
+
+    /* Verification notice */
+    .verify-notice {
+      background: rgba(201,162,39,0.08); border-radius: 6px;
+      padding: 1rem 1.3rem; margin-bottom: 1.5rem; font-size: 0.95rem;
+      color: var(--warm-gray); line-height: 1.5;
+    }
+    .verify-notice strong { color: var(--navy); }
+
+    /* Contact CTA */
+    .contact-cta {
+      background: var(--navy); color: var(--white); border-radius: 8px;
+      padding: 1.5rem; margin-top: 1.5rem; text-align: center;
+    }
+    .contact-cta h3 { font-family: 'Playfair Display', serif; margin-bottom: 0.5rem; }
+    .contact-cta p { opacity: 0.85; margin-bottom: 1rem; font-size: 0.95rem; }
+    .contact-cta a {
+      display: inline-block; background: var(--gold); color: var(--white);
+      padding: 0.6rem 1.5rem; border-radius: 5px; font-weight: 600;
+      text-decoration: none;
+    }
+    .contact-cta a:hover { background: var(--accent); text-decoration: none; }
+
+    /* Supplier table */
+    .supplier-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .supplier-table th, .supplier-table td {
+      text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #e8e4dc;
+    }
+    .supplier-table th { font-weight: 600; color: var(--navy); font-size: 0.9rem; }
+    .supplier-table td { font-size: 0.95rem; }
+    .supplier-count { font-size: 0.9rem; color: var(--warm-gray); }
+
+    /* Footer */
+    footer { background: var(--navy); color: var(--white); padding: 1.5rem 2rem; margin-top: 3rem; }
+    .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; font-size: 0.9rem; opacity: 0.8; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { padding: 1rem; }
+      .tabs { overflow-x: auto; }
+      .tab { padding: 0.6rem 1rem; font-size: 0.95rem; white-space: nowrap; }
+      .header-inner { padding: 0.5rem 1rem; }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Loading */
+    .spinner {
+      width: 24px; height: 24px;
+      border: 3px solid var(--surface); border-top: 3px solid var(--gold);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 0.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER (always visible) ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/index.html" class="logo-area">
+        <div class="logo-circle">foa</div>
+        <div class="logo-text">Sanksjonsovervåking</div>
+      </a>
+      <div class="header-actions" id="header-actions" style="display:none;">
+        <span class="user-email" id="user-email"></span>
+        <button class="btn-logout" onclick="doLogout()">Logg ut</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== AUTH PAGE ===== -->
+  <div id="auth-page">
+    <div class="auth-container">
+      <h1 id="auth-title">Logg inn</h1>
+      <p id="auth-subtitle">Overvåk leverandørene dine mot internasjonale sanksjonslister.</p>
+      <div id="auth-msg"></div>
+
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="form-group" id="org-field" style="display:none;">
+          <label>Organisasjon</label>
+          <input type="text" id="auth-org" placeholder="F.eks. Tromsø kommune">
+        </div>
+        <div class="form-group">
+          <label>E-post</label>
+          <input type="email" id="auth-email" placeholder="din@epost.no" required>
+        </div>
+        <div class="form-group">
+          <label>Passord</label>
+          <input type="password" id="auth-password" placeholder="Minst 6 tegn" required minlength="6">
+        </div>
+        <button type="submit" class="btn-primary" id="auth-btn">Logg inn</button>
+      </form>
+
+      <div class="auth-toggle">
+        <span id="auth-toggle-text">Har du ikke konto? </span>
+        <a onclick="toggleAuthMode()" id="auth-toggle-link">Opprett konto</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div id="app-page" style="display:none;">
+    <div class="container">
+
+      <!-- Stats -->
+      <div class="stats-bar" id="stats-bar">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-lists">0</div>
+          <div class="stat-label">Leverandørlister</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-suppliers">0</div>
+          <div class="stat-label">Leverandører</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number alert" id="stat-matches">0</div>
+          <div class="stat-label">Aktive treff</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-last-run">–</div>
+          <div class="stat-label">Sist sjekket</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('lists')">Mine lister</button>
+        <button class="tab" onclick="showTab('results')">Treff</button>
+        <button class="tab" onclick="showTab('history')">Historikk</button>
+        <button class="tab" onclick="showTab('settings')">Innstillinger</button>
+      </div>
+
+      <!-- TAB: Mine lister -->
+      <div class="tab-panel active" id="panel-lists">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <h2 style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--navy);">Leverandørlister</h2>
+          <button class="btn btn-gold" onclick="showNewListForm()">+ Ny liste</button>
+        </div>
+
+        <!-- New list form -->
+        <div class="new-list-form" id="new-list-form">
+          <label style="font-weight:600; color:var(--navy);">Opprett ny leverandørliste</label>
+          <div class="form-row">
+            <input type="text" id="new-list-name" placeholder="Listenavn (f.eks. Rammeavtale IT 2025)">
+            <select id="new-list-freq" style="padding:0.6rem; border:2px solid #ddd; border-radius:6px; font-family:'Source Sans 3',sans-serif;">
+              <option value="weekly">Ukentlig screening</option>
+              <option value="monthly">Månedlig screening</option>
+              <option value="manual">Kun manuell</option>
+            </select>
+          </div>
+
+          <!-- Upload -->
+          <div class="upload-area" id="upload-area" style="margin-top:1rem;">
+            <h3>Last opp Excel-fil</h3>
+            <p>Dra og slipp en .xlsx-fil her, eller klikk for å velge fil.<br>
+            Filen må ha en kolonne med leverandørnavn (første kolonne brukes).</p>
+            <input type="file" id="file-input" accept=".xlsx,.xls,.csv">
+          </div>
+
+          <div class="progress-container" id="upload-progress">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="progress-text" id="progress-text">Laster opp...</div>
+          </div>
+
+          <div id="preview-area" style="display:none; margin-top:1rem;">
+            <p style="font-weight:600; color:var(--navy);">Forhåndsvisning (<span id="preview-count">0</span> leverandører):</p>
+            <div id="preview-list" style="max-height:200px; overflow-y:auto; font-size:0.9rem; color:var(--slate); margin-top:0.5rem; background:#f9f9f6; padding:0.8rem; border-radius:6px;"></div>
+            <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+              <button class="btn btn-screen" onclick="createListAndScreen()">Opprett og screen</button>
+              <button class="btn btn-outline" onclick="cancelNewList()">Avbryt</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing lists -->
+        <div id="lists-container">
+          <div class="empty-state">
+            <div class="icon">📋</div>
+            <h3>Ingen lister ennå</h3>
+            <p>Klikk «+ Ny liste» for å laste opp din første leverandørliste.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Treff -->
+      <div class="tab-panel" id="panel-results">
+        <h2 style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--navy); margin-bottom:1rem;">Sanksjonstruff</h2>
+
+        <div class="verify-notice">
+          <strong>Viktig:</strong> Alle treff må verifiseres manuelt. Klikk «Verifiser hos kilden» for å sjekke treffet direkte i den offisielle sanksjonslisten. Automatisk screening kan gi falske treff ved navnelikhet.
+        </div>
+
+        <div id="matches-container">
+          <div class="empty-state">
+            <div class="icon">✅</div>
+            <h3>Ingen aktive treff</h3>
+            <p>Ingen av leverandørene dine har treff i sanksjonslistene.</p>
+          </div>
+        </div>
+
+        <div class="contact-cta">
+          <h3>Trenger du juridisk bistand?</h3>
+          <p>Har du treff som krever oppfølging? Vi kan hjelpe med vurdering etter anskaffelsesregelverket (FOA § 24-2 og § 24-5).</p>
+          <a href="mailto:kurs@forumoa.no?subject=Sanksjonstruff%20-%20juridisk%20bistand">Kontakt oss</a>
+        </div>
+      </div>
+
+      <!-- TAB: Historikk -->
+      <div class="tab-panel" id="panel-history">
+        <h2 style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--navy); margin-bottom:1rem;">Screening-historikk</h2>
+        <div id="history-container">
+          <div class="empty-state">
+            <div class="icon">📊</div>
+            <h3>Ingen kjøringer ennå</h3>
+            <p>Historikk vises her etter første screening.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Innstillinger -->
+      <div class="tab-panel" id="panel-settings">
+        <h2 style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--navy); margin-bottom:1rem;">Innstillinger</h2>
+        <div class="card">
+          <h3>Varsling</h3>
+          <div class="form-group" style="margin-top:0.8rem;">
+            <label>E-post for varsler</label>
+            <input type="email" id="settings-notify-email" placeholder="Samme som innlogging" style="width:100%; padding:0.6rem; border:2px solid #ddd; border-radius:6px; font-family:'Source Sans 3',sans-serif;">
+          </div>
+          <div style="margin-top:0.5rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" id="settings-notify-enabled" checked>
+              <span>Send e-postvarsler ved nye treff</span>
+            </label>
+          </div>
+          <div class="form-group" style="margin-top:1rem;">
+            <label>Terskel for treff (0.3 = bred, 0.8 = streng)</label>
+            <input type="range" id="settings-threshold" min="0.3" max="0.9" step="0.05" value="0.5"
+              style="width:100%;" oninput="document.getElementById('threshold-val').textContent=this.value">
+            <span id="threshold-val" style="font-weight:600; color:var(--navy);">0.5</span>
+          </div>
+          <button class="btn btn-screen" onclick="saveSettings()" style="margin-top:1rem;">Lagre innstillinger</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>Forum for offentlige anskaffelser</div>
+      <div><a href="mailto:kurs@forumoa.no" style="color:white;">kurs@forumoa.no</a></div>
+    </div>
+  </footer>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    // ── CONFIG ──
+    const SUPABASE_URL = 'https://aiweylrcdrcrksypfdov.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpd2V5bHJjZHJjcmtzeXBmZG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjMyMzQsImV4cCI6MjA4OTA5OTIzNH0.IGj9uvmAWX_jKrbBkzIDnFhSkGaMrInGx4rj5qmJF_A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let isSignUp = false;
+    let pendingSuppliers = [];
+
+    // Source URLs for verification links
+    const SOURCE_URLS = {
+      ofac_sdn: 'https://sanctionssearch.ofac.treas.gov/',
+      ofac_cons: 'https://sanctionssearch.ofac.treas.gov/',
+      un_sc: 'https://www.un.org/securitycouncil/sanctions/consolidated-list',
+      eu_fsf: 'https://www.sanctionsmap.eu/',
+      uk_ofsi: 'https://www.gov.uk/government/publications/the-uk-sanctions-list',
+      canada_sema: 'https://www.international.gc.ca/world-monde/international_relations-relations_internationales/sanctions/consolidated-consolide.aspx',
+      swiss_seco: 'https://www.seco.admin.ch/seco/en/home/Aussenwirtschaftspolitik_Wirtschaftliche_Zusammenarbeit/Wirtschaftsbeziehungen/exportkontrollen-und-sanktionen/sanktionen-embargos.html',
+      us_bis_denied: 'https://www.bis.doc.gov/index.php/the-denied-persons-list',
+      france_tresor: 'https://gels-avoirs.dgtresor.gouv.fr/',
+      ohchr_settlement: 'https://www.ohchr.org/en/hr-bodies/hrc/regular-sessions/session31/database-hrc3136',
+      us_cbp_wro: 'https://www.cbp.gov/trade/forced-labor',
+    };
+
+    const SOURCE_NAMES = {
+      ofac_sdn: 'OFAC SDN', ofac_cons: 'OFAC Consolidated', un_sc: 'FN Sikkerhetsrådet',
+      eu_fsf: 'EU Sanksjoner', uk_ofsi: 'UK OFSI', canada_sema: 'Canada SEMA',
+      swiss_seco: 'Sveits SECO', us_bis_denied: 'US BIS', france_tresor: 'Frankrike Trésor',
+      ohchr_settlement: 'FN OHCHR', us_cbp_wro: 'US CBP Tvangsarbeid',
+      australia_dfat: 'Australia DFAT', interpol: 'Interpol', us_sam: 'US SAM',
+      worldbank: 'Verdensbanken',
+    };
+
+    // ── AUTH ──
+    async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        showApp();
+      } else {
+        document.getElementById('auth-page').style.display = 'block';
+      }
+    }
+
+    function toggleAuthMode() {
+      isSignUp = !isSignUp;
+      document.getElementById('auth-title').textContent = isSignUp ? 'Opprett konto' : 'Logg inn';
+      document.getElementById('auth-subtitle').textContent = isSignUp
+        ? 'Kom i gang med automatisk sanksjonsovervåking.'
+        : 'Overvåk leverandørene dine mot internasjonale sanksjonslister.';
+      document.getElementById('auth-btn').textContent = isSignUp ? 'Opprett konto' : 'Logg inn';
+      document.getElementById('auth-toggle-text').textContent = isSignUp ? 'Har du allerede konto? ' : 'Har du ikke konto? ';
+      document.getElementById('auth-toggle-link').textContent = isSignUp ? 'Logg inn' : 'Opprett konto';
+      document.getElementById('org-field').style.display = isSignUp ? 'block' : 'none';
+      document.getElementById('auth-msg').innerHTML = '';
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const btn = document.getElementById('auth-btn');
+      const msgEl = document.getElementById('auth-msg');
+
+      btn.disabled = true;
+      btn.textContent = isSignUp ? 'Oppretter...' : 'Logger inn...';
+      msgEl.innerHTML = '';
+
+      try {
+        if (isSignUp) {
+          const org = document.getElementById('auth-org').value.trim();
+          const { data, error } = await sb.auth.signUp({ email, password });
+          if (error) throw error;
+
+          // Update profile with org name
+          if (data.user && org) {
+            await sb.from('profiles').update({ organisation_name: org }).eq('id', data.user.id);
+          }
+
+          msgEl.innerHTML = '<div class="auth-message success">Konto opprettet! Sjekk e-posten din for bekreftelseslenke.</div>';
+        } else {
+          const { data, error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          currentUser = data.user;
+          showApp();
+        }
+      } catch (err) {
+        let msg = err.message;
+        if (msg.includes('Invalid login')) msg = 'Feil e-post eller passord.';
+        if (msg.includes('already registered')) msg = 'Denne e-posten er allerede registrert.';
+        msgEl.innerHTML = `<div class="auth-message error">${esc(msg)}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = isSignUp ? 'Opprett konto' : 'Logg inn';
+      }
+    }
+
+    async function doLogout() {
+      await sb.auth.signOut();
+      currentUser = null;
+      document.getElementById('app-page').style.display = 'none';
+      document.getElementById('header-actions').style.display = 'none';
+      document.getElementById('auth-page').style.display = 'block';
+    }
+
+    function showApp() {
+      document.getElementById('auth-page').style.display = 'none';
+      document.getElementById('app-page').style.display = 'block';
+      document.getElementById('header-actions').style.display = 'flex';
+      document.getElementById('user-email').textContent = currentUser.email;
+      loadDashboard();
+    }
+
+    // ── DASHBOARD ──
+    async function loadDashboard() {
+      await Promise.all([loadStats(), loadLists(), loadMatches(), loadHistory()]);
+    }
+
+    async function loadStats() {
+      const [listsRes, suppliersRes, matchesRes, runsRes] = await Promise.all([
+        sb.from('supplier_lists').select('id', { count: 'exact', head: true }).eq('user_id', currentUser.id),
+        sb.from('suppliers').select('id', { count: 'exact', head: true }).eq('user_id', currentUser.id),
+        sb.from('screening_results').select('id', { count: 'exact', head: true }).eq('user_id', currentUser.id).eq('is_new', true),
+        sb.from('screening_runs').select('completed_at').eq('user_id', currentUser.id).eq('status', 'completed').order('completed_at', { ascending: false }).limit(1),
+      ]);
+
+      document.getElementById('stat-lists').textContent = listsRes.count || 0;
+      document.getElementById('stat-suppliers').textContent = suppliersRes.count || 0;
+      document.getElementById('stat-matches').textContent = matchesRes.count || 0;
+
+      if (runsRes.data && runsRes.data.length > 0) {
+        const d = new Date(runsRes.data[0].completed_at);
+        document.getElementById('stat-last-run').textContent = d.toLocaleDateString('nb-NO');
+      }
+    }
+
+    // ── LISTS ──
+    async function loadLists() {
+      const { data: lists } = await sb.from('supplier_lists')
+        .select('*, suppliers(count)')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      const container = document.getElementById('lists-container');
+      if (!lists || lists.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>Ingen lister ennå</h3><p>Klikk «+ Ny liste» for å laste opp din første leverandørliste.</p></div>';
+        return;
+      }
+
+      let html = '';
+      for (const list of lists) {
+        const count = list.suppliers?.[0]?.count || 0;
+        const freq = list.screening_frequency === 'weekly' ? 'Ukentlig' : list.screening_frequency === 'monthly' ? 'Månedlig' : 'Manuell';
+        const lastScreened = list.last_screened_at
+          ? new Date(list.last_screened_at).toLocaleDateString('nb-NO')
+          : 'Aldri';
+
+        html += `<div class="card">
+          <h3>${esc(list.name)}</h3>
+          <div class="card-meta">${count} leverandører · ${freq} screening · Sist sjekket: ${lastScreened}</div>
+          <div class="card-actions">
+            <button class="btn btn-screen" onclick="screenList('${list.id}')">Screen nå</button>
+            <button class="btn btn-outline" onclick="viewSuppliers('${list.id}', '${esc(list.name)}')">Se leverandører</button>
+            <button class="btn btn-delete" onclick="deleteList('${list.id}')">Slett</button>
+          </div>
+        </div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function showNewListForm() {
+      document.getElementById('new-list-form').classList.add('visible');
+      document.getElementById('new-list-name').focus();
+    }
+
+    function cancelNewList() {
+      document.getElementById('new-list-form').classList.remove('visible');
+      document.getElementById('preview-area').style.display = 'none';
+      pendingSuppliers = [];
+    }
+
+    // ── FILE UPLOAD ──
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) processFile(e.target.files[0]);
+    });
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+          // Extract names from first column, skip header if it looks like one
+          let names = [];
+          for (let i = 0; i < rows.length; i++) {
+            const val = rows[i][0];
+            if (val && typeof val === 'string' && val.trim().length > 1) {
+              const name = val.trim();
+              // Skip common header names
+              if (i === 0 && /^(navn|name|leverand|supplier|selskap|company|firma)/i.test(name)) continue;
+              names.push(name);
+            }
+          }
+
+          // Deduplicate
+          names = [...new Set(names)];
+
+          if (names.length === 0) {
+            alert('Fant ingen leverandørnavn i filen. Sjekk at første kolonne inneholder navn.');
+            return;
+          }
+
+          pendingSuppliers = names;
+
+          // Show preview
+          document.getElementById('preview-area').style.display = 'block';
+          document.getElementById('preview-count').textContent = names.length;
+          document.getElementById('preview-list').innerHTML = names.slice(0, 20)
+            .map(n => esc(n)).join('<br>') + (names.length > 20 ? `<br><em>... og ${names.length - 20} til</em>` : '');
+
+          // Auto-fill list name from filename
+          if (!document.getElementById('new-list-name').value) {
+            const fname = file.name.replace(/\.(xlsx|xls|csv)$/i, '').replace(/[-_]/g, ' ');
+            document.getElementById('new-list-name').value = fname;
+          }
+        } catch (err) {
+          alert('Kunne ikke lese filen: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function createListAndScreen() {
+      if (pendingSuppliers.length === 0) return;
+
+      const listName = document.getElementById('new-list-name').value.trim() || 'Leverandørliste';
+      const freq = document.getElementById('new-list-freq').value;
+
+      const progressEl = document.getElementById('upload-progress');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      progressEl.classList.add('visible');
+      progressFill.style.width = '10%';
+      progressText.textContent = 'Oppretter liste...';
+
+      try {
+        // Create list
+        const { data: list, error: listErr } = await sb.from('supplier_lists').insert({
+          user_id: currentUser.id,
+          name: listName,
+          screening_frequency: freq,
+        }).select().single();
+
+        if (listErr) throw listErr;
+
+        progressFill.style.width = '30%';
+        progressText.textContent = `Legger til ${pendingSuppliers.length} leverandører...`;
+
+        // Insert suppliers in batches of 50
+        const batchSize = 50;
+        for (let i = 0; i < pendingSuppliers.length; i += batchSize) {
+          const batch = pendingSuppliers.slice(i, i + batchSize).map(name => ({
+            list_id: list.id,
+            user_id: currentUser.id,
+            name: name,
+          }));
+          const { error: supErr } = await sb.from('suppliers').insert(batch);
+          if (supErr) throw supErr;
+
+          const pct = 30 + (i / pendingSuppliers.length) * 40;
+          progressFill.style.width = pct + '%';
+          progressText.textContent = `Lagt til ${Math.min(i + batchSize, pendingSuppliers.length)} av ${pendingSuppliers.length}...`;
+        }
+
+        progressFill.style.width = '75%';
+        progressText.textContent = 'Kjører screening mot sanksjonslister...';
+
+        // Screen the list
+        const { data: matches, error: screenErr } = await sb.rpc('screen_supplier_list', {
+          p_list_id: list.id,
+          p_threshold: 0.5,
+          p_max_per_supplier: 5,
+        });
+
+        if (screenErr) throw screenErr;
+
+        progressFill.style.width = '100%';
+        const matchCount = matches ? matches.length : 0;
+        progressText.textContent = matchCount > 0
+          ? `Ferdig! ${matchCount} treff funnet.`
+          : 'Ferdig! Ingen treff funnet.';
+
+        // Reset form
+        pendingSuppliers = [];
+        document.getElementById('new-list-form').classList.remove('visible');
+        document.getElementById('preview-area').style.display = 'none';
+        document.getElementById('new-list-name').value = '';
+        fileInput.value = '';
+
+        // Refresh
+        await loadDashboard();
+
+        // Switch to results tab if matches found
+        if (matchCount > 0) {
+          showTab('results');
+        }
+
+        setTimeout(() => { progressEl.classList.remove('visible'); }, 3000);
+
+      } catch (err) {
+        progressText.textContent = 'Feil: ' + err.message;
+        progressFill.style.width = '100%';
+        progressFill.style.background = 'var(--red)';
+      }
+    }
+
+    // ── SCREENING ──
+    async function screenList(listId) {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = 'Screener...';
+
+      try {
+        const { data, error } = await sb.rpc('screen_supplier_list', {
+          p_list_id: listId,
+          p_threshold: 0.5,
+          p_max_per_supplier: 5,
+        });
+
+        if (error) throw error;
+
+        const count = data ? data.length : 0;
+        btn.textContent = count > 0 ? `${count} treff!` : 'Ingen treff';
+        await loadDashboard();
+
+        if (count > 0) showTab('results');
+      } catch (err) {
+        btn.textContent = 'Feil!';
+        alert('Screening feilet: ' + err.message);
+      } finally {
+        setTimeout(() => { btn.disabled = false; btn.textContent = 'Screen nå'; }, 2000);
+      }
+    }
+
+    // ── MATCHES ──
+    async function loadMatches() {
+      const { data, error } = await sb.rpc('get_new_matches');
+
+      const container = document.getElementById('matches-container');
+      if (error || !data || data.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><h3>Ingen aktive treff</h3><p>Ingen av leverandørene dine har treff i sanksjonslistene.</p></div>';
+        return;
+      }
+
+      let html = '';
+      for (const m of data) {
+        const sourceName = SOURCE_NAMES[m.matched_source] || m.matched_source;
+        const sourceUrl = SOURCE_URLS[m.matched_source] || '#';
+        const scorePct = Math.round(m.match_score * 100);
+        const programs = m.programs ? (Array.isArray(m.programs) ? m.programs.join(', ') : m.programs) : '';
+
+        html += `<div class="match-card">
+          <div class="match-header">
+            <div>
+              <div class="match-supplier">Din leverandør: ${esc(m.supplier_name)}</div>
+              <div class="match-entity">Treff: ${esc(m.matched_entity_name)} <small>(${esc(sourceName)})</small></div>
+            </div>
+            <span class="match-score">${scorePct}% match</span>
+          </div>
+          <div class="match-details">
+            ${m.entity_type ? `<strong>Type:</strong> ${esc(m.entity_type)} · ` : ''}
+            <strong>Liste:</strong> ${esc(m.list_name)}<br>
+            ${programs ? `<strong>Program:</strong> ${esc(programs)}<br>` : ''}
+            ${m.reasons ? `<strong>Grunn:</strong> ${esc(m.reasons.substring(0, 200))}${m.reasons.length > 200 ? '...' : ''}<br>` : ''}
+          </div>
+          <div class="match-actions">
+            <a class="match-source-link" href="${esc(sourceUrl)}" target="_blank" rel="noopener">
+              Verifiser hos kilden →
+            </a>
+            <button class="btn btn-outline" onclick="markReviewed('${m.result_id}')" style="font-size:0.85rem; padding:0.35rem 0.7rem;">
+              Merk som gjennomgått
+            </button>
+          </div>
+        </div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    async function markReviewed(resultId) {
+      await sb.rpc('mark_matches_reviewed', { p_result_ids: [resultId] });
+      await loadDashboard();
+    }
+
+    // ── HISTORY ──
+    async function loadHistory() {
+      const { data: runs } = await sb.from('screening_runs')
+        .select('*, supplier_lists(name)')
+        .eq('user_id', currentUser.id)
+        .order('started_at', { ascending: false })
+        .limit(20);
+
+      const container = document.getElementById('history-container');
+      if (!runs || runs.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>Ingen kjøringer ennå</h3><p>Historikk vises her etter første screening.</p></div>';
+        return;
+      }
+
+      let html = '<table class="supplier-table"><tr><th>Dato</th><th>Liste</th><th>Leverandører</th><th>Nye treff</th><th>Status</th></tr>';
+      for (const r of runs) {
+        const date = new Date(r.started_at).toLocaleDateString('nb-NO');
+        const listName = r.supplier_lists?.name || '–';
+        const status = r.status === 'completed' ? '✅' : r.status === 'running' ? '⏳' : '❌';
+
+        html += `<tr>
+          <td>${date}</td>
+          <td>${esc(listName)}</td>
+          <td>${r.suppliers_screened || 0}</td>
+          <td style="font-weight:600; color:${r.new_matches_found > 0 ? 'var(--red)' : 'var(--green)'};">${r.new_matches_found || 0}</td>
+          <td>${status}</td>
+        </tr>`;
+      }
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    // ── SUPPLIER DETAIL VIEW ──
+    async function viewSuppliers(listId, listName) {
+      const { data: suppliers } = await sb.from('suppliers')
+        .select('name, country, created_at')
+        .eq('list_id', listId)
+        .order('name');
+
+      if (!suppliers) return;
+
+      let html = `<div class="card"><h3>${esc(listName)}</h3>
+        <div class="supplier-count">${suppliers.length} leverandører</div>
+        <table class="supplier-table"><tr><th>Navn</th><th>Land</th></tr>`;
+      for (const s of suppliers) {
+        html += `<tr><td>${esc(s.name)}</td><td>${esc(s.country || '–')}</td></tr>`;
+      }
+      html += '</table></div>';
+
+      document.getElementById('lists-container').innerHTML = html +
+        '<button class="btn btn-outline" onclick="loadLists()" style="margin-top:1rem;">← Tilbake til lister</button>';
+    }
+
+    async function deleteList(listId) {
+      if (!confirm('Er du sikker på at du vil slette denne listen og alle leverandører i den?')) return;
+      await sb.from('supplier_lists').delete().eq('id', listId);
+      await loadDashboard();
+    }
+
+    // ── SETTINGS ──
+    async function loadSettings() {
+      const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+      if (data) {
+        document.getElementById('settings-notify-email').value = data.notification_email || '';
+        document.getElementById('settings-notify-enabled').checked = data.notify_on_new_match;
+        document.getElementById('settings-threshold').value = data.match_threshold || 0.5;
+        document.getElementById('threshold-val').textContent = data.match_threshold || 0.5;
+      }
+    }
+
+    async function saveSettings() {
+      const notifyEmail = document.getElementById('settings-notify-email').value.trim();
+      const notifyEnabled = document.getElementById('settings-notify-enabled').checked;
+      const threshold = parseFloat(document.getElementById('settings-threshold').value);
+
+      const { error } = await sb.from('profiles').update({
+        notification_email: notifyEmail || null,
+        notify_on_new_match: notifyEnabled,
+        match_threshold: threshold,
+        updated_at: new Date().toISOString(),
+      }).eq('id', currentUser.id);
+
+      if (error) {
+        alert('Feil: ' + error.message);
+      } else {
+        alert('Innstillinger lagret!');
+      }
+    }
+
+    // ── TABS ──
+    function showTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      event.target?.classList.add('active');
+      document.getElementById('panel-' + name)?.classList.add('active');
+
+      // Find the tab button and activate it
+      document.querySelectorAll('.tab').forEach(t => {
+        if (t.textContent.toLowerCase().includes(
+          name === 'lists' ? 'lister' : name === 'results' ? 'treff' : name === 'history' ? 'historikk' : 'innstillinger'
+        )) t.classList.add('active');
+      });
+
+      if (name === 'settings') loadSettings();
+    }
+
+    // ── HELPERS ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ── INIT ──
+    checkSession();
+  </script>
+</body>
+</html>
