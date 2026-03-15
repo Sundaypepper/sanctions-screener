@@ -1,0 +1,1630 @@
+---
+permalink: /admin-screener.html
+---
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Oversikt - Forum for offentlige anskaffelser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #c9a227;
+            --navy: #16213e;
+            --cream: #faf8f5;
+            --light-gray: #f5f5f5;
+            --dark-gray: #6b6b6b;
+            --border-color: #e0e0e0;
+            --success: #2d7a4a;
+            --warning: #d97706;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background-color: var(--cream);
+            color: var(--navy);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: linear-gradient(135deg, var(--navy) 0%, #1a2f5a 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--cream);
+            padding: 50px 40px;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+
+        .login-card p {
+            color: var(--dark-gray);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--navy);
+            font-size: 14px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--gold);
+            color: var(--navy);
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #b8922a;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background-color: #fee;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(22, 33, 62, 0.1);
+            border-top-color: var(--navy);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--navy);
+            color: var(--cream);
+            padding: 30px 0;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 30px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--gold);
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: rgba(250, 248, 245, 0.7);
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            margin: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(250, 248, 245, 0.8);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(201, 162, 39, 0.1);
+            color: var(--gold);
+        }
+
+        .nav-link.active {
+            background-color: rgba(201, 162, 39, 0.15);
+            color: var(--gold);
+            border-left-color: var(--gold);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            padding: 0 20px;
+            border-top: 1px solid rgba(201, 162, 39, 0.2);
+            padding-top: 20px;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background-color: rgba(220, 38, 38, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--navy);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 13px;
+            color: var(--dark-gray);
+            text-align: right;
+        }
+
+        .user-info-name {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            background-color: white;
+            padding: 0 30px;
+            gap: 30px;
+        }
+
+        .tab-button {
+            padding: 15px 0;
+            border: none;
+            background: none;
+            color: var(--dark-gray);
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            color: var(--navy);
+        }
+
+        .tab-button.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--gold);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--dark-gray);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        /* Tables */
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--light-gray);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--navy);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: #fed7aa;
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Buttons in tables */
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid var(--gold);
+            background-color: white;
+            color: var(--gold);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-small:hover {
+            background-color: var(--gold);
+            color: var(--navy);
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px;
+        }
+
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--light-gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--gold);
+            font-size: 18px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 3px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--dark-gray);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--navy);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--dark-gray);
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
+            color: var(--navy);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Access Denied */
+        .access-denied {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--navy) 0%, #1a2f5a 100%);
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .access-denied h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            color: var(--cream);
+        }
+
+        .access-denied p {
+            color: rgba(250, 248, 245, 0.8);
+            font-size: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                display: none;
+                position: absolute;
+                width: 260px;
+                height: 100vh;
+                z-index: 999;
+            }
+
+            .sidebar.mobile-open {
+                display: block;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .tabs-container {
+                padding: 0 20px;
+                gap: 15px;
+                overflow-x: auto;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        .access-denied-content {
+            text-align: center;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: var(--navy);
+            border-radius: 2px;
+        }
+
+        .copy-email-template {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 15px 0;
+            word-break: break-word;
+        }
+
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--navy);
+            width: 150px;
+        }
+
+        .detail-value {
+            color: var(--dark-gray);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--dark-gray);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .expandable-row {
+            cursor: pointer;
+        }
+
+        .expandable-row:hover {
+            background-color: #f9f9f9 !important;
+        }
+
+        .expandable-row.expanded + .expandable-details {
+            display: table-row;
+        }
+
+        .expandable-details {
+            display: none;
+        }
+
+        .expandable-details td {
+            padding: 20px;
+            background-color: #fafafa;
+        }
+
+        .details-content {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-card">
+                <h1>Admin Portal</h1>
+                <p>Logg inn for å administrere systemet</p>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="email">E-post</label>
+                        <input type="email" id="email" required placeholder="admin@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Passord</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <span id="loginBtnText">Logg inn</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Access Denied Screen -->
+        <div id="accessDenied" class="access-denied" style="display: none;">
+            <div class="access-denied-content">
+                <h1>Ingen tilgang</h1>
+                <p>Du har ikke tillatelse til å få tilgang til denne siden.</p>
+                <button class="btn btn-primary" onclick="handleLogout()">Logg ut</button>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" style="display: none; flex: 1; display: flex;">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h2>Admin</h2>
+                    <p id="userEmail">admin@example.com</p>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link active" onclick="switchTab('overview')">
+                            <div class="nav-icon">📊</div>
+                            <span>Oversikt</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('users')">
+                            <div class="nav-icon">👥</div>
+                            <span>Brukere</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('orders')">
+                            <div class="nav-icon">📦</div>
+                            <span>Bestillinger</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('subscriptions')">
+                            <div class="nav-icon">💳</div>
+                            <span>Abonnementer</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('system')">
+                            <div class="nav-icon">⚙️</div>
+                            <span>Systemstatus</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button class="btn-logout" onclick="handleLogout()">Logg ut</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="header">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="hamburger" onclick="toggleSidebar()">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <h1 class="header-title" id="pageTitle">Oversikt</h1>
+                    </div>
+                    <div class="header-actions">
+                        <div class="user-info">
+                            <div class="user-info-name" id="userNameDisplay">Administrator</div>
+                            <div id="userEmailDisplay">admin@example.com</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-container">
+                    <button class="tab-button active" onclick="switchTab('overview')">Oversikt</button>
+                    <button class="tab-button" onclick="switchTab('users')">Brukere</button>
+                    <button class="tab-button" onclick="switchTab('orders')">Bestillinger</button>
+                    <button class="tab-button" onclick="switchTab('subscriptions')">Abonnementer</button>
+                    <button class="tab-button" onclick="switchTab('system')">Systemstatus</button>
+                </div>
+
+                <!-- Tab 1: Overview -->
+                <div id="overviewTab" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Totalt antall brukere</div>
+                            <div class="stat-value" id="totalUsers">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Aktive abonnementer</div>
+                            <div class="stat-value" id="activeSubscriptions">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Ventende bestillinger</div>
+                            <div class="stat-value" id="pendingOrders">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Screenet denne måneden</div>
+                            <div class="stat-value" id="screeningsThisMonth">-</div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 20px;">Nylig aktivitet</h3>
+                    <div class="activity-feed" id="activityFeed">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>Ingen aktivitet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Users -->
+                <div id="usersTab" class="tab-content">
+                    <div class="table-wrapper">
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Organisasjon</th>
+                                    <th>E-post</th>
+                                    <th>Plan</th>
+                                    <th>Status</th>
+                                    <th>Antall leverandører</th>
+                                    <th>Registrert dato</th>
+                                    <th>Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr><td colspan="7" class="empty-state" style="padding: 40px;">Laster inn...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Orders -->
+                <div id="ordersTab" class="tab-content">
+                    <div class="table-wrapper">
+                        <table id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>Navn</th>
+                                    <th>E-post</th>
+                                    <th>Telefon</th>
+                                    <th>Arbeidsgiver</th>
+                                    <th>Plan</th>
+                                    <th>Fakturareferanse</th>
+                                    <th>Status</th>
+                                    <th>Dato</th>
+                                    <th>Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <tr><td colspan="9" class="empty-state" style="padding: 40px;">Laster inn...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Subscriptions -->
+                <div id="subscriptionsTab" class="tab-content">
+                    <div class="table-wrapper">
+                        <table id="subscriptionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Bruker</th>
+                                    <th>Plan</th>
+                                    <th>Pris</th>
+                                    <th>Status</th>
+                                    <th>Startdato</th>
+                                    <th>Utløpsdato</th>
+                                    <th>Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subscriptionsTableBody">
+                                <tr><td colspan="7" class="empty-state" style="padding: 40px;">Laster inn...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 5: System Status -->
+                <div id="systemTab" class="tab-content">
+                    <div style="max-width: 600px;">
+                        <div class="stat-card" style="margin-bottom: 20px;">
+                            <div class="stat-label">Siste synkronisering</div>
+                            <div class="stat-value" id="lastSync" style="font-size: 18px;">-</div>
+                        </div>
+
+                        <div class="stat-card" style="margin-bottom: 20px;">
+                            <div class="stat-label">Enheter i databasen</div>
+                            <div class="stat-value" id="entityCount" style="font-size: 18px;">-</div>
+                        </div>
+
+                        <div class="stat-card" style="margin-bottom: 20px;">
+                            <div class="stat-label">Screeninger i dag</div>
+                            <div class="stat-value" id="screeningsToday" style="font-size: 18px;">-</div>
+                        </div>
+
+                        <div class="stat-card" style="margin-bottom: 20px;">
+                            <div class="stat-label">Screeninger denne uken</div>
+                            <div class="stat-value" id="screeningsThisWeek" style="font-size: 18px;">-</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Siste e-post sendt</div>
+                            <div class="stat-value" id="lastEmailSent" style="font-size: 18px;">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Ordredetaljer</span>
+                <button class="modal-close" onclick="closeModal('orderModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetails"></div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <p style="margin-bottom: 10px; font-weight: 600;">Velkomsteen-mail mal:</p>
+                    <div class="copy-email-template" id="emailTemplate"></div>
+                    <button class="btn btn-small" onclick="copyEmailTemplate()" style="margin-top: 10px;">Kopier e-mail</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('orderModal')">Lukk</button>
+                <button class="btn btn-primary" id="markProcessedBtn" onclick="markOrderProcessed()">Marker som behandlet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Brukerdetaljer</span>
+                <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('userModal')">Lukk</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://aiweylrcdrcrksypfdov.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpd2V5bHJjZHJjcmtzeXBmZG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjMyMzQsImV4cCI6MjA4OTA5OTIzNH0.IGj9uvmAWX_jKrbBkzIDnFhSkGaMrInGx4rj5qmJF_A';
+
+        let supabase;
+        let currentUser = null;
+        let currentOrderId = null;
+
+        // Initialize Supabase
+        async function initSupabase() {
+            const { createClient } = window.supabase;
+            supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Login handler
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginError = document.getElementById('loginError');
+
+            loginBtn.disabled = true;
+            loginBtnText.innerHTML = '<span class="loading-spinner"></span>';
+            loginError.style.display = 'none';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+
+                // Check if user is admin
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('is_admin, full_name')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError || !profile?.is_admin) {
+                    await supabase.auth.signOut();
+                    showAccessDenied();
+                    return;
+                }
+
+                showDashboard(profile);
+                loadDashboardData();
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtnText.textContent = 'Logg inn';
+            }
+        }
+
+        function showDashboard(profile) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userEmailDisplay').textContent = currentUser.email;
+            document.getElementById('userNameDisplay').textContent = profile.full_name || 'Administrator';
+        }
+
+        function showAccessDenied() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'flex';
+        }
+
+        // Logout handler
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show selected tab
+            const tabMap = {
+                'overview': 'overviewTab',
+                'users': 'usersTab',
+                'orders': 'ordersTab',
+                'subscriptions': 'subscriptionsTab',
+                'system': 'systemTab'
+            };
+
+            const titleMap = {
+                'overview': 'Oversikt',
+                'users': 'Brukere',
+                'orders': 'Bestillinger',
+                'subscriptions': 'Abonnementer',
+                'system': 'Systemstatus'
+            };
+
+            document.getElementById(tabMap[tabName]).classList.add('active');
+            document.querySelectorAll('.tab-button')[Object.keys(tabMap).indexOf(tabName)].classList.add('active');
+            document.querySelectorAll('.nav-link')[Object.keys(tabMap).indexOf(tabName)].classList.add('active');
+            document.getElementById('pageTitle').textContent = titleMap[tabName];
+
+            // Load tab-specific data
+            if (tabName === 'users') loadUsers();
+            if (tabName === 'orders') loadOrders();
+            if (tabName === 'subscriptions') loadSubscriptions();
+            if (tabName === 'system') loadSystemStatus();
+
+            // Close sidebar on mobile
+            document.getElementById('sidebar').classList.remove('mobile-open');
+        }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+
+        // Load overview data
+        async function loadDashboardData() {
+            try {
+                // Total users
+                const { count: userCount } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('totalUsers').textContent = userCount || 0;
+
+                // Active subscriptions
+                const { count: subCount } = await supabase
+                    .from('subscriptions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'active');
+                document.getElementById('activeSubscriptions').textContent = subCount || 0;
+
+                // Pending orders
+                const { count: orderCount } = await supabase
+                    .from('orders')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'pending');
+                document.getElementById('pendingOrders').textContent = orderCount || 0;
+
+                // Screenings this month
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                const { count: screeningCount } = await supabase
+                    .from('screening_runs')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', monthStart);
+                document.getElementById('screeningsThisMonth').textContent = screeningCount || 0;
+
+                // Recent activity
+                const { data: activities } = await supabase
+                    .from('screening_runs')
+                    .select('id, user_id, created_at, status, profiles(full_name)')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                loadActivityFeed(activities || []);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function loadActivityFeed(activities) {
+            const feed = document.getElementById('activityFeed');
+            if (activities.length === 0) {
+                feed.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Ingen aktivitet</p></div>';
+                return;
+            }
+
+            feed.innerHTML = activities.map(activity => {
+                const time = new Date(activity.created_at);
+                const timeStr = formatTime(time);
+                const userName = activity.profiles?.full_name || 'Ukjent bruker';
+
+                return `
+                    <div class="activity-item">
+                        <div class="activity-icon">🔍</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${userName} kjørte screening</div>
+                            <div class="activity-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const { data: users } = await supabase
+                    .from('profiles')
+                    .select(`
+                        id,
+                        full_name,
+                        email,
+                        created_at,
+                        subscriptions(plan, status)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                const tbody = document.getElementById('usersTableBody');
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Ingen brukere funnet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => {
+                    const sub = user.subscriptions?.[0];
+                    const plan = sub?.plan || 'Ingen abonnement';
+                    const status = sub?.status || 'inactive';
+                    const statusBadge = status === 'active' ?
+                        '<span class="badge badge-success">Aktiv</span>' :
+                        '<span class="badge badge-danger">Inaktiv</span>';
+                    const date = new Date(user.created_at).toLocaleDateString('no-NO');
+
+                    return `
+                        <tr onclick="openUserModal('${user.id}')" style="cursor: pointer;">
+                            <td>${user.full_name || '-'}</td>
+                            <td>${user.email}</td>
+                            <td>${plan}</td>
+                            <td>${statusBadge}</td>
+                            <td>-</td>
+                            <td>${date}</td>
+                            <td><button class="btn-small" onclick="event.stopPropagation();">Se detaljer</button></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Load orders
+        async function loadOrders() {
+            try {
+                const { data: orders } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                const tbody = document.getElementById('ordersTableBody');
+                if (!orders || orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Ingen bestillinger funnet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = orders.map(order => {
+                    const date = new Date(order.created_at).toLocaleDateString('no-NO');
+                    const statusBadge = order.status === 'pending' ?
+                        '<span class="badge badge-warning">Ventende</span>' :
+                        '<span class="badge badge-success">Behandlet</span>';
+                    const actionBtn = order.status === 'pending' ?
+                        `<button class="btn-small" onclick="openOrderModal('${order.id}')">Behandle</button>` :
+                        `<button class="btn-small" disabled>Behandlet</button>`;
+
+                    return `
+                        <tr>
+                            <td>${order.name || '-'}</td>
+                            <td>${order.email}</td>
+                            <td>${order.phone || '-'}</td>
+                            <td>${order.employer || '-'}</td>
+                            <td>${order.plan || '-'}</td>
+                            <td>${order.invoice_ref || '-'}</td>
+                            <td>${statusBadge}</td>
+                            <td>${date}</td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        // Load subscriptions
+        async function loadSubscriptions() {
+            try {
+                const { data: subscriptions } = await supabase
+                    .from('subscriptions')
+                    .select(`
+                        id,
+                        plan,
+                        price,
+                        status,
+                        start_date,
+                        end_date,
+                        user_id,
+                        profiles(full_name, email)
+                    `)
+                    .order('end_date', { ascending: true });
+
+                const tbody = document.getElementById('subscriptionsTableBody');
+                if (!subscriptions || subscriptions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Ingen abonnementer funnet</td></tr>';
+                    return;
+                }
+
+                const now = new Date();
+                const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+                tbody.innerHTML = subscriptions.map(sub => {
+                    const startDate = new Date(sub.start_date).toLocaleDateString('no-NO');
+                    const endDate = new Date(sub.end_date).toLocaleDateString('no-NO');
+                    const userName = sub.profiles?.full_name || 'Ukjent';
+                    const userEmail = sub.profiles?.email || '-';
+                    const endDateObj = new Date(sub.end_date);
+
+                    let statusBadge = '<span class="badge badge-success">Aktiv</span>';
+                    if (endDateObj < now) {
+                        statusBadge = '<span class="badge badge-danger">Utløpt</span>';
+                    } else if (endDateObj < thirtyDaysFromNow) {
+                        statusBadge = '<span class="badge badge-warning">Utløper snart</span>';
+                    }
+
+                    return `
+                        <tr>
+                            <td>${userName}</td>
+                            <td>${sub.plan}</td>
+                            <td>${sub.price ? sub.price + ' NOK' : '-'}</td>
+                            <td>${statusBadge}</td>
+                            <td>${startDate}</td>
+                            <td>${endDate}</td>
+                            <td><button class="btn-small" onclick="extendSubscription('${sub.id}')">Forleng</button></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading subscriptions:', error);
+            }
+        }
+
+        // Load system status
+        async function loadSystemStatus() {
+            try {
+                // Last sync
+                const { data: entities } = await supabase
+                    .from('entities')
+                    .select('updated_at')
+                    .order('updated_at', { ascending: false })
+                    .limit(1);
+
+                if (entities && entities.length > 0) {
+                    const syncTime = new Date(entities[0].updated_at).toLocaleString('no-NO');
+                    document.getElementById('lastSync').textContent = syncTime;
+                } else {
+                    document.getElementById('lastSync').textContent = 'Ingen data';
+                }
+
+                // Entity count
+                const { count: entityCount } = await supabase
+                    .from('entities')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('entityCount').textContent = entityCount || 0;
+
+                // Screenings today
+                const today = new Date().toISOString().split('T')[0];
+                const { count: todayCount } = await supabase
+                    .from('screening_runs')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', today);
+                document.getElementById('screeningsToday').textContent = todayCount || 0;
+
+                // Screenings this week
+                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+                const { count: weekCount } = await supabase
+                    .from('screening_runs')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', weekAgo);
+                document.getElementById('screeningsThisWeek').textContent = weekCount || 0;
+
+                // Last email sent
+                const { data: emails } = await supabase
+                    .from('email_log')
+                    .select('sent_at')
+                    .order('sent_at', { ascending: false })
+                    .limit(1);
+
+                if (emails && emails.length > 0) {
+                    const emailTime = new Date(emails[0].sent_at).toLocaleString('no-NO');
+                    document.getElementById('lastEmailSent').textContent = emailTime;
+                } else {
+                    document.getElementById('lastEmailSent').textContent = 'Ingen e-poster sendt';
+                }
+            } catch (error) {
+                console.error('Error loading system status:', error);
+            }
+        }
+
+        // Modal handlers
+        async function openOrderModal(orderId) {
+            currentOrderId = orderId;
+            const { data: order } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            const detailsHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">Navn</div>
+                    <div class="detail-value">${order.name || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">E-post</div>
+                    <div class="detail-value">${order.email}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Telefon</div>
+                    <div class="detail-value">${order.phone || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Arbeidsgiver</div>
+                    <div class="detail-value">${order.employer || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Plan</div>
+                    <div class="detail-value">${order.plan || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fakturareferanse</div>
+                    <div class="detail-value">${order.invoice_ref || '-'}</div>
+                </div>
+            `;
+
+            document.getElementById('orderDetails').innerHTML = detailsHtml;
+
+            // Generate password and prepare email template
+            const password = generatePassword(12);
+            const emailTemplate = `Hei ${order.name},
+
+Takk for din bestilling. Vi har opprettet en konto for deg.
+
+Innloggingsdetaljer:
+E-post: ${order.email}
+Passord: ${password}
+
+Vennligst logg inn på https://forumoa.no/portal og endre passordet ditt ved første innlogging.
+
+Med vennlig hilsen,
+Forum for offentlige anskaffelser`;
+
+            document.getElementById('emailTemplate').textContent = emailTemplate;
+            document.getElementById('orderModal').classList.add('active');
+        }
+
+        async function openUserModal(userId) {
+            const { data: user } = await supabase
+                .from('profiles')
+                .select(`
+                    *,
+                    subscriptions(plan, status, start_date, end_date),
+                    vendors(id, name)
+                `)
+                .eq('id', userId)
+                .single();
+
+            const detailsHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">Navn</div>
+                    <div class="detail-value">${user.full_name || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">E-post</div>
+                    <div class="detail-value">${user.email}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Telefon</div>
+                    <div class="detail-value">${user.phone || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Organisasjon</div>
+                    <div class="detail-value">${user.organization || '-'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Registrert</div>
+                    <div class="detail-value">${new Date(user.created_at).toLocaleDateString('no-NO')}</div>
+                </div>
+                ${user.subscriptions && user.subscriptions.length > 0 ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Abonnement</div>
+                        <div class="detail-value">
+                            Plan: ${user.subscriptions[0].plan}<br>
+                            Status: ${user.subscriptions[0].status}<br>
+                            Fra: ${new Date(user.subscriptions[0].start_date).toLocaleDateString('no-NO')}<br>
+                            Til: ${new Date(user.subscriptions[0].end_date).toLocaleDateString('no-NO')}
+                        </div>
+                    </div>
+                ` : ''}
+                <div class="detail-row">
+                    <div class="detail-label">Leverandører</div>
+                    <div class="detail-value">${user.vendors?.length || 0}</div>
+                </div>
+            `;
+
+            document.getElementById('userDetails').innerHTML = detailsHtml;
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        async function markOrderProcessed() {
+            if (!currentOrderId) return;
+
+            try {
+                const { error } = await supabase
+                    .from('orders')
+                    .update({ status: 'processed' })
+                    .eq('id', currentOrderId);
+
+                if (error) throw error;
+
+                closeModal('orderModal');
+                loadOrders();
+                alert('Bestillingen ble markert som behandlet.');
+            } catch (error) {
+                alert('Feil ved oppdatering: ' + error.message);
+            }
+        }
+
+        function copyEmailTemplate() {
+            const template = document.getElementById('emailTemplate').textContent;
+            navigator.clipboard.writeText(template).then(() => {
+                alert('E-mail mal kopiert til utklippstavle!');
+            });
+        }
+
+        async function extendSubscription(subscriptionId) {
+            try {
+                const { data: sub } = await supabase
+                    .from('subscriptions')
+                    .select('end_date')
+                    .eq('id', subscriptionId)
+                    .single();
+
+                const newEndDate = new Date(sub.end_date);
+                newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({ end_date: newEndDate.toISOString() })
+                    .eq('id', subscriptionId);
+
+                if (error) throw error;
+
+                loadSubscriptions();
+                alert('Abonnement forlenget med 12 måneder.');
+            } catch (error) {
+                alert('Feil ved forlengelse: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function generatePassword(length) {
+            const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            return password;
+        }
+
+        function formatTime(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (seconds < 60) return 'Nettopp nå';
+            if (minutes < 60) return `${minutes} minutt siden`;
+            if (hours < 24) return `${hours} time siden`;
+            if (days < 30) return `${days} dag siden`;
+
+            return date.toLocaleDateString('no-NO');
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await initSupabase();
+
+            // Check if user is already logged in
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin, full_name')
+                    .eq('id', data.session.user.id)
+                    .single();
+
+                if (profile?.is_admin) {
+                    currentUser = data.session.user;
+                    showDashboard(profile);
+                    loadDashboardData();
+                } else {
+                    showAccessDenied();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

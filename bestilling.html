@@ -1,0 +1,859 @@
+---
+permalink: /bestilling.html
+---
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestill Sanksjonsscreening | Forum for offentlige anskaffelser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            color: #333;
+            background-color: #faf8f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header/Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #16213e 0%, #1a2a4a 100%);
+            color: #faf8f5;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #c9a227;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .logo-circle-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-style: italic;
+            color: #16213e;
+            font-weight: 700;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .hero .subtitle {
+            font-size: 1.1em;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        /* Product Description */
+        .description {
+            padding: 60px 20px;
+            background-color: #faf8f5;
+        }
+
+        .description h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: #16213e;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .feature-item {
+            background-color: white;
+            padding: 25px;
+            border-left: 4px solid #c9a227;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .feature-item h3 {
+            color: #16213e;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .feature-item p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 60px 20px;
+            background-color: white;
+        }
+
+        .pricing h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: #16213e;
+            margin-bottom: 50px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background-color: #faf8f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .pricing-card.highlighted {
+            border-color: #c9a227;
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(201, 162, 39, 0.2);
+        }
+
+        .most-popular {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #c9a227;
+            color: #16213e;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            color: #16213e;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .price {
+            font-size: 2.5em;
+            color: #c9a227;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .price-note {
+            color: #999;
+            font-size: 0.85em;
+            margin-bottom: 25px;
+        }
+
+        .billing-period {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .features-list {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .features-list li {
+            list-style: none;
+            padding: 10px 0;
+            color: #666;
+            border-bottom: 1px solid #e8e8e8;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #c9a227;
+            font-weight: bold;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .select-btn {
+            width: 100%;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #16213e;
+            color: #faf8f5;
+        }
+
+        .select-btn:hover {
+            background-color: #1a2a4a;
+        }
+
+        .pricing-card.highlighted .select-btn {
+            background-color: #c9a227;
+            color: #16213e;
+        }
+
+        .pricing-card.highlighted .select-btn:hover {
+            background-color: #b8951f;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 60px 20px;
+            background-color: #faf8f5;
+        }
+
+        .form-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: #16213e;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .selected-plan {
+            background-color: #f0ebe0;
+            border-left: 4px solid #c9a227;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .selected-plan p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .selected-plan .plan-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #16213e;
+        }
+
+        .selected-plan .plan-price {
+            color: #c9a227;
+            font-weight: 600;
+        }
+
+        .change-plan-link {
+            color: #c9a227;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9em;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #16213e;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #c9a227;
+            box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-group input.error + .error-message {
+            display: block;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 400;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .checkbox-group input[type="checkbox"]:focus + label {
+            outline: 2px solid #c9a227;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px 30px;
+            font-size: 1.05em;
+            font-weight: 600;
+            background-color: #c9a227;
+            color: #16213e;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Source Sans 3', sans-serif;
+        }
+
+        .submit-btn:hover {
+            background-color: #b8951f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #16213e;
+            color: #faf8f5;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .footer-links a {
+            color: #c9a227;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #faf8f5;
+        }
+
+        .footer-copyright {
+            color: #999;
+            font-size: 0.9em;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8em;
+            }
+
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.highlighted {
+                transform: scale(1);
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+            }
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .submit-btn.loading {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="logo-circle">
+                <span class="logo-circle-text">OA</span>
+            </div>
+            <h1>Sanksjonsscreening</h1>
+            <p class="subtitle">Forum for offentlige anskaffelser</p>
+        </div>
+    </section>
+
+    <!-- Description Section -->
+    <section class="description">
+        <div class="container">
+            <h2>Automatisk Sanksjonsscreening av Leverandører</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h3>Ukentlig Automatisk Matching</h3>
+                    <p>Automatisk matching mot alle sanksjonslister: OFAC, EU, FN, UK OFSI, Norske sanksjonslisten og WRO/tvangsarbeid.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Screening av Eiere og Aksjonærer</h3>
+                    <p>Dyptgående screening av direkte og indirekte eiere og aksjonærer for fullstendig compliance.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>E-postvarsling ved Treff</h3>
+                    <p>Umiddelbar e-postvarsling når nye treff oppdages, med verifiseringslenker til originalkilden.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Kontraktshåndtering</h3>
+                    <p>Enkel kontraktshåndtering med stoppedato og oversikt over alle leverandører.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing">
+        <div class="container">
+            <h2>Velg Abonnementsplan</h2>
+            <div class="pricing-cards" id="pricingCards">
+                <!-- Basis Plan -->
+                <div class="pricing-card" data-plan="basis" data-plan-name="Basis" data-plan-price="490">
+                    <h3>Basis</h3>
+                    <div class="price">kr 490</div>
+                    <div class="price-note">eks. mva.</div>
+                    <div class="billing-period">12 måneder</div>
+                    <ul class="features-list">
+                        <li>Inntil 200 leverandører/underleverandører</li>
+                        <li>Alle sanksjonslister inkludert</li>
+                        <li>Ukentlig automatisk screening</li>
+                        <li>E-postvarsling ved treff</li>
+                    </ul>
+                    <button class="select-btn" onclick="selectPlan(this)">Velg denne</button>
+                </div>
+
+                <!-- Standard Plan (Most Popular) -->
+                <div class="pricing-card" data-plan="standard" data-plan-name="Standard" data-plan-price="990">
+                    <div class="most-popular">Mest populær</div>
+                    <h3>Standard</h3>
+                    <div class="price">kr 990</div>
+                    <div class="price-note">eks. mva.</div>
+                    <div class="billing-period">12 måneder</div>
+                    <ul class="features-list">
+                        <li>Inntil 1000 leverandører/underleverandører</li>
+                        <li>Alle sanksjonslister inkludert</li>
+                        <li>Ukentlig automatisk screening</li>
+                        <li>E-postvarsling ved treff</li>
+                        <li>Prioritert støtte</li>
+                    </ul>
+                    <button class="select-btn" onclick="selectPlan(this)">Velg denne</button>
+                </div>
+
+                <!-- Ubegrenset Plan -->
+                <div class="pricing-card" data-plan="unlimited" data-plan-name="Ubegrenset" data-plan-price="1490">
+                    <h3>Ubegrenset</h3>
+                    <div class="price">kr 1 490</div>
+                    <div class="price-note">eks. mva.</div>
+                    <div class="billing-period">12 måneder</div>
+                    <ul class="features-list">
+                        <li>Ubegrenset antall leverandører/underleverandører</li>
+                        <li>Alle sanksjonslister inkludert</li>
+                        <li>Ukentlig automatisk screening</li>
+                        <li>E-postvarsling ved treff</li>
+                        <li>Prioritert støtte</li>
+                        <li>Dedikert kontaktperson</li>
+                    </ul>
+                    <button class="select-btn" onclick="selectPlan(this)">Velg denne</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="form-section" id="formSection">
+        <div class="container">
+            <h2>Bestilling av Abonnement</h2>
+            <div class="form-container">
+                <div id="successMessage" class="message success">
+                    <strong>Takk for din bestilling!</strong> Du vil motta en e-post med innloggingsdetaljer innen kort tid.
+                </div>
+                <div id="errorMessage" class="message error"></div>
+
+                <form id="orderForm" onsubmit="handleSubmit(event)">
+                    <div class="selected-plan" id="selectedPlanDisplay">
+                        <p>Valgt plan:</p>
+                        <p class="plan-name" id="selectedPlanName">Ingen plan valgt</p>
+                        <p class="plan-price" id="selectedPlanPrice"></p>
+                        <a class="change-plan-link" onclick="scrollToPricing()">Endre valg</a>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullName">Fullt navn *</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                        <div class="error-message">Fullt navn er påkrevd</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-postadresse *</label>
+                        <input type="email" id="email" name="email" required>
+                        <div class="error-message">Gyldig e-postadresse er påkrevd</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Telefon *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                        <div class="error-message">Telefonnummer er påkrevd</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization">Arbeidsgiver / organisasjon *</label>
+                        <input type="text" id="organization" name="organization" required>
+                        <div class="error-message">Arbeidsgiver/organisasjon er påkrevd</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="invoiceRef">Fakturareferanse</label>
+                        <input type="text" id="invoiceRef" name="invoiceRef" placeholder="Valgfritt, men anbefalt">
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">Jeg aksepterer vilkårene for tjenesten</label>
+                        <div class="error-message">Du må akseptere vilkårene for å fortsette</div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">Bestill abonnement</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="mailto:kurs@forumoa.no">Trenger du juridisk bistand?</a>
+                <a href="mailto:kurs@forumoa.no">Spørsmål om tjenesten?</a>
+            </div>
+            <div class="footer-copyright">
+                © Forum for offentlige anskaffelser
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://aiweylrcdrcrksypfdov.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpd2V5bHJjZHJjcmtzeXBmZG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjMyMzQsImV4cCI6MjA4OTA5OTIzNH0.IGj9uvmAWX_jKrbBkzIDnFhSkGaMrInGx4rj5qmJF_A';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // State
+        let selectedPlan = null;
+
+        // Select Plan Function
+        function selectPlan(button) {
+            const card = button.closest('.pricing-card');
+            const planId = card.dataset.plan;
+            const planName = card.dataset.planName;
+            const planPrice = card.dataset.planPrice;
+
+            selectedPlan = {
+                id: planId,
+                name: planName,
+                price: planPrice
+            };
+
+            // Update UI
+            document.querySelectorAll('.pricing-card').forEach(c => {
+                c.classList.remove('highlighted');
+            });
+            card.classList.add('highlighted');
+
+            // Update form display
+            updateSelectedPlanDisplay();
+
+            // Scroll to form
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateSelectedPlanDisplay() {
+            if (selectedPlan) {
+                document.getElementById('selectedPlanName').textContent = selectedPlan.name;
+                document.getElementById('selectedPlanPrice').textContent = `kr ${selectedPlan.price}/mnd`;
+            }
+        }
+
+        function scrollToPricing() {
+            document.getElementById('pricingCards').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Form Validation and Submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            // Reset messages
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('errorMessage').textContent = '';
+
+            // Validate plan selection
+            if (!selectedPlan) {
+                showError('Vennligst velg en abonnementsplan');
+                return;
+            }
+
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+
+            // Collect form data
+            const formData = {
+                plan: selectedPlan.id,
+                plan_name: selectedPlan.name,
+                plan_price: selectedPlan.price,
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                organization: document.getElementById('organization').value,
+                invoice_ref: document.getElementById('invoiceRef').value || null,
+                created_at: new Date().toISOString()
+            };
+
+            // Submit to Supabase
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sender...';
+
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([formData]);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Success
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('orderForm').reset();
+                document.querySelectorAll('.pricing-card').forEach(c => {
+                    c.classList.remove('highlighted');
+                });
+                selectedPlan = null;
+                updateSelectedPlanDisplay();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+                showError('Det oppstod en feil ved sending av bestillingen. Vennligst prøv igjen.');
+                console.error('Submission error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Bestill abonnement';
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const fields = [
+                { id: 'fullName', type: 'text' },
+                { id: 'email', type: 'email' },
+                { id: 'phone', type: 'tel' },
+                { id: 'organization', type: 'text' }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const isFieldValid = validateField(input, field.type);
+                if (!isFieldValid) {
+                    isValid = false;
+                }
+            });
+
+            // Validate checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                termsCheckbox.classList.add('error');
+                isValid = false;
+            } else {
+                termsCheckbox.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        function validateField(input, type) {
+            let isValid = false;
+
+            if (type === 'email') {
+                isValid = input.value.trim() !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+            } else if (type === 'tel') {
+                isValid = input.value.trim() !== '';
+            } else {
+                isValid = input.value.trim() !== '';
+            }
+
+            if (!isValid) {
+                input.classList.add('error');
+            } else {
+                input.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Set default plan on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Auto-select Standard plan as default (most popular)
+            const standardCard = document.querySelector('[data-plan="standard"]');
+            if (standardCard) {
+                const btn = standardCard.querySelector('.select-btn');
+                selectPlan(btn);
+            }
+        });
+
+        // Real-time validation on input
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const type = this.type === 'email' ? 'email' : (this.type === 'tel' ? 'tel' : 'text');
+                    validateField(this, type);
+                });
+                input.addEventListener('focus', function() {
+                    this.classList.remove('error');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
